@@ -22,135 +22,77 @@
   // ----------------------------------------------------------
   // 1. Raccourcis vers la config & état global
   // ----------------------------------------------------------
-  var CONFIG = window.POP_CONFIG || {};
+  var CONFIG = window.CONFIG || {};
   var ADS_CFG = CONFIG.ads || {};
 
   var GLOBAL_STATE = (window.POP_STATE = window.POP_STATE || {});
   GLOBAL_STATE.ads = GLOBAL_STATE.ads || {};
 
-  // DOM pour le bandeau de debug web
+  // ----------------------------------------------------------
+  // 2. DOM pour le bandeau (mode debug web)
+  // ----------------------------------------------------------
   var bannerContainer = null;
   var bannerBox = null;
 
-  // Mode de fonctionnement :
-  // "disabled"     → pubs coupées
-  // "web-debug"    → faux bandeau HTML + rewarded simulée
-  // "android-bridge" → vrai SDK géré côté Android (via window.AndroidAds)
+  // ----------------------------------------------------------
+  // 3. Mode de fonctionnement : "disabled" / "web-debug" / "android-bridge"
+  // ----------------------------------------------------------
   var mode = "disabled";
-
-  // Callback en attente pour la prochaine rewarded (jeu → pub → jeu)
-  var pendingRewardCallback = null;
-
-  // ----------------------------------------------------------
-  // 2. Détection du bridge Android
-  // ----------------------------------------------------------
-  function hasAndroidBridge() {
-    // Nom volontairement simple : à définir côté Android plus tard.
-    // Par ex. côté Java :
-    //   webView.addJavascriptInterface(new AdsBridge(...), "AndroidAds");
-    //
-    // Et dans AdsBridge :
-    //   @JavascriptInterface fun showBanner(...)
-    //   @JavascriptInterface fun hideBanner(...)
-    //   @JavascriptInterface fun showRewarded(...)
-    //
-    var b = window.AndroidAds;
-    if (!b) return false;
-    if (typeof b.showBanner !== "function") return false;
-    if (typeof b.hideBanner !== "function") return false;
-    if (typeof b.showRewarded !== "function") return false;
-    return true;
+  if (ADS_CFG.enabled !== false) {
+    mode = window.AndroidAds ? "android-bridge" : "web-debug";
   }
 
   // ----------------------------------------------------------
-  // 3. Initialisation du module pub
-  // ----------------------------------------------------------
-  function initAds() {
-    // Si désactivé en config → on sort tout de suite
-    if (!ADS_CFG || ADS_CFG.enabled === false) {
-      mode = "disabled";
-      GLOBAL_STATE.ads.mode = mode;
-      console.log("[ads] Pubs désactivées dans config.js.");
-      return;
-    }
-
-    // Récupère le DOM pour le bandeau (utilisé en mode web-debug)
-    bannerContainer = document.getElementById("ad-banner-container") || null;
-    bannerBox = document.getElementById("ad-banner") || null;
-
-    // Détection du bridge Android
-    if (hasAndroidBridge()) {
-      mode = "android-bridge";
-      console.log("[ads] Mode ANDROID BRIDGE actif (AndroidAds).");
-    } else {
-      mode = "web-debug";
-      console.log("[ads] Mode WEB DEBUG (aucun bridge Android détecté).");
-    }
-
-    GLOBAL_STATE.ads.mode = mode;
-
-    // En debug, on cache le bandeau au démarrage
-    if (mode === "web-debug") {
-      if (bannerContainer) {
-        bannerContainer.style.display = "none";
-      }
-      if (bannerBox) {
-        bannerBox.textContent = "";
-      }
-    }
-  }
-
-  // ----------------------------------------------------------
-  // 4. Bandeau (bannière) : showBanner / hideBanner
+  // 4. Banner : showBanner(placement) / hideBanner()
   // ----------------------------------------------------------
   /**
-   * Affiche ou demande l’affichage de la bannière.
-   * @param {string} placement - optionnel, ex : "menu", "help", "options", "game", "gameover"
+   * Affiche la bannière (ou demande à Android de l’afficher) pour un écran donné.
+   * @param {string} placement – Nom de l’écran (menu, game, pause, etc.)
    */
   function showBanner(placement) {
-    placement = placement || "default";
-
-    // Si globalement désactivées → rien
     if (mode === "disabled") return;
 
-    // Si config précise les écrans autorisés
-    if (ADS_CFG.bannerScreens) {
-      var allowed = ADS_CFG.bannerScreens[placement];
-      if (allowed === false) {
-        // Cet écran n’est pas censé avoir de pub → on masque
-        hideBanner();
-        return;
-      }
-    }
-
+    // Sur Android natif : on passe par le bridge
     if (mode === "android-bridge") {
       try {
-        // On délègue à la couche Android. Le côté natif
-        // décidera comment utiliser "placement" (si utile).
-        window.AndroidAds.showBanner(String(placement));
+        window.AndroidAds.showBanner(placement);
       } catch (err) {
         console.warn("[ads] Erreur AndroidAds.showBanner :", err);
       }
       return;
     }
 
-    // Mode WEB DEBUG : on affiche un faux bandeau en bas
-    if (!bannerContainer || !bannerBox) {
-      // Rien dans le DOM → on log juste
-      console.warn("[ads] Impossible d’afficher le bandeau : #ad-banner-container manquant.");
+    // Mode WEB DEBUG
+    var allowed = ADS_CFG.bannerScreens[placement];
+    if (allowed === false) {
+      // Cet écran n’est pas censé avoir de pub → on masque
+      hideBanner();
       return;
     }
 
+    // S'assurer d'avoir les éléments DOM
+    if (!bannerContainer || !bannerBox) {
+      bannerContainer = document.getElementById("ad-banner-container") || null;
+      bannerBox = document.getElementById("ad-banner") || null;
+      if (!bannerContainer || !bannerBox) {
+        console.warn("[ads] Élément #ad-banner-container manquant.");
+        return;
+      }
+    }
+
     bannerContainer.style.display = "flex";
-    bannerBox.textContent = "BANNIÈRE PUB (TEST) – écran : " + placement;
+    bannerContainer.setAttribute("aria-hidden", "false");
+    document.body.style.paddingBottom = "50px";
+    // (Le contenu visuel du bandeau est purement décoratif en mode debug)
   }
 
   /**
-   * Masque ou demande de masquer la bannière.
+   * Masque la bannière (ou demande à Android de la masquer).
    */
   function hideBanner() {
     if (mode === "disabled") return;
 
+    // Sur Android natif
     if (mode === "android-bridge") {
       try {
         window.AndroidAds.hideBanner();
@@ -167,114 +109,85 @@
     if (bannerBox) {
       bannerBox.textContent = "";
     }
+    document.body.style.paddingBottom = "";
+    if (bannerContainer) {
+      bannerContainer.setAttribute("aria-hidden", "true");
+    }
   }
 
   // ----------------------------------------------------------
   // 5. Rewarded : showRewarded(onComplete) + callback Android
   // ----------------------------------------------------------
   /**
-   * Demande l’affichage d’une pub rewarded.
-   * En V1, game.js nous appelle via callAds("showRewarded", payload, callback).
-   *
-   * @param {object} payload - optionnel (peut contenir des infos de debug)
-   * @param {function} onComplete - appelé SI la récompense est validée.
+   * Demande l’affichage d’une publicité vidéo “rewarded”.
+   * @param {Function} onComplete – Callback à exécuter quand la pub est terminée
    */
-  function showRewarded(payload, onComplete) {
-    if (typeof payload === "function" && !onComplete) {
-      // cas où on aurait appelé showRewarded(onComplete) directement
-      onComplete = payload;
-      payload = {};
-    }
-    payload = payload || {};
+  function showRewarded(onComplete) {
+    if (mode === "disabled") return;
+    var callback = typeof onComplete === "function" ? onComplete : function () {};
 
-    // Si pubs désactivées ou rewarded désactivée → on exécute immédiatement
-    if (
-      mode === "disabled" ||
-      !ADS_CFG ||
-      !ADS_CFG.rewarded ||
-      ADS_CFG.rewarded.enabled === false
-    ) {
-      if (typeof onComplete === "function") {
-        console.log("[ads] Rewarded désactivée : on simule une réussite immédiate.");
-        onComplete();
-      }
-      return;
-    }
-
-    // On stocke le callback pour la fin de la vidéo
-    pendingRewardCallback = typeof onComplete === "function" ? onComplete : null;
-
+    // Sur Android natif
     if (mode === "android-bridge") {
       try {
-        // On délègue l’affichage à Android.
-        // Le côté natif devra, à la fin de la vidéo,
-        // appeler window.POP_Ads.onAndroidRewardedComplete(true/false).
+        // On sauvegarde le callback, Android appellera POP_Ads.onAndroidRewardedComplete.
+        GLOBAL_STATE.ads.pendingRewardCallback = callback;
         window.AndroidAds.showRewarded();
       } catch (err) {
         console.warn("[ads] Erreur AndroidAds.showRewarded :", err);
-        // Si ça plante, on libère le callback pour ne pas bloquer le jeu
-        var cb = pendingRewardCallback;
-        pendingRewardCallback = null;
-        if (cb) cb();
+        // Si erreur, on libère quand même le jeu pour éviter blocage
+        callback(false);
       }
       return;
     }
 
-    // Mode WEB DEBUG : on simule une pub reward en 1 seconde
-    console.log("[ads] WEB DEBUG : simulation de rewarded, aucune vraie pub.");
+    // Mode WEB DEBUG : on simule une pub reward (timer de 3 sec)
+    console.log("[ads] (DEBUG) Début de la pub récompense simulée...");
     setTimeout(function () {
-      var cb = pendingRewardCallback;
-      pendingRewardCallback = null;
-      if (cb) cb();
-    }, 1000);
+      console.log("[ads] (DEBUG) Fin de la pub simulée. Récompense accordée !");
+      callback(true);
+    }, 3000);
   }
 
   /**
-   * Méthode appelée depuis Android quand la vidéo rewarded est terminée.
-   * À implémenter côté natif, par ex :
-   *
-   *   webView.evaluateJavascript("window.POP_Ads.onAndroidRewardedComplete(true);", null)
-   *
-   * @param {boolean} success - true si la récompense est validée.
+   * (Appelé par Android) Callback quand une pub rewarded se termine.
+   * @param {boolean} success – true si le joueur doit être récompensé
    */
   function onAndroidRewardedComplete(success) {
-    success = success !== false; // par défaut, on considère que c’est OK
-
-    var cb = pendingRewardCallback;
-    pendingRewardCallback = null;
-
-    if (!cb) {
-      console.warn("[ads] onAndroidRewardedComplete appelé sans callback en attente.");
-      return;
+    // On remet la WebView dans l'état qu'elle avait avant la pub (si besoin)
+    try {
+      window.AndroidAds.onRewardedCompleteAck();
+    } catch (err) {
+      console.warn("[ads] Erreur onRewardedCompleteAck :", err);
     }
-
-    if (success) {
-      cb();
-    } else {
-      // Si Android signale un échec (fermé avant la fin, erreur réseau, etc.)
-      // on peut décider de NE PAS donner la récompense.
-      console.log("[ads] Rewarded terminée sans récompense (success = false).");
+    // On exécute le callback stocké lors de showRewarded
+    var pendingCb = GLOBAL_STATE.ads.pendingRewardCallback;
+    GLOBAL_STATE.ads.pendingRewardCallback = null;
+    if (typeof pendingCb === "function") {
+      pendingCb(!!success);
     }
   }
 
   // ----------------------------------------------------------
-  // 6. Interstitiel “peut-être” (optionnel, plus tard)
+  // 6. Initialisation des pubs (appelée au chargement du jeu)
   // ----------------------------------------------------------
-  function maybeShowInterstitial(context) {
-    // Prévu pour plus tard : entre deux parties, au bout de X runs, etc.
-    // Pour l’instant, on ne fait rien (juste un log éventuel).
-    console.log("[ads] maybeShowInterstitial appelé (non implémenté). context =", context);
+  function initAds() {
+    // DOM du bandeau (mode web-debug uniquement)
+    bannerContainer = document.getElementById("ad-banner-container") || null;
+    bannerBox = document.getElementById("ad-banner") || null;
+    // Si on est en mode debug web, on affiche le bandeau par défaut sur l'écran menu
+    if (mode === "web-debug") {
+      console.log("[ads] Mode debug web activé : bannière factice affichée.");
+      showBanner("menu");
+    }
+    // Côté Android : on pourrait envoyer un signal de readiness ici si besoin
   }
 
-  // ----------------------------------------------------------
-  // 7. Exposition publique
-  // ----------------------------------------------------------
+  // On expose les fonctions nécessaires dans l'objet global POP_Ads
   window.POP_Ads = {
     initAds: initAds,
     showBanner: showBanner,
     hideBanner: hideBanner,
     showRewarded: showRewarded,
-    onAndroidRewardedComplete: onAndroidRewardedComplete,
-    maybeShowInterstitial: maybeShowInterstitial
+    onAndroidRewardedComplete: onAndroidRewardedComplete
   };
 })();
