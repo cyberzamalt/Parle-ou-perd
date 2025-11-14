@@ -427,3 +427,8 @@ body {
   background-color: rgba(148, 163, 184, 0.8);
   border-radius: 999px;
 }
+/* Dernière règle existante dans ton style.css */
+
+.screen[hidden] {
+  display: none !important;
+}
