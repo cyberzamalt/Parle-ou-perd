@@ -270,17 +270,39 @@
   <script src="js/ui.js"></script>
   <script src="js/ads.js"></script>
 
-  <!--
-    Plus tard, quand les fonctions d'init existeront, on ajoutera ici :
+  <script>
+    (function () {
+      "use strict";
 
-    <script>
-      initConfig();
-      initGame();
-      initVoice();
-      initUI();
-    </script>
+      function boot() {
+        try {
+          if (typeof initConfig === "function") {
+            initConfig();
+          }
+          if (window.POP_Game && typeof POP_Game.initGame === "function") {
+            POP_Game.initGame();
+          }
+          if (window.POP_Voice && typeof POP_Voice.initVoice === "function") {
+            POP_Voice.initVoice();
+          }
+          if (window.POP_UI && typeof POP_UI.initUI === "function") {
+            POP_UI.initUI();
+          }
+          if (window.POP_Ads && typeof POP_Ads.initAds === "function") {
+            POP_Ads.initAds();
+          }
+        } catch (err) {
+          console.error("[boot] Erreur d'initialisation Parle ou perd !", err);
+        }
+      }
 
-    Pour l’instant on laisse ce bloc en commentaire pour éviter les erreurs.
-  -->
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot);
+      } else {
+        boot();
+      }
+    })();
+  </script>
 </body>
 </html>
+
