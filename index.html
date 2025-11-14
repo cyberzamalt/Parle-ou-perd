@@ -43,15 +43,30 @@
 
   <!-- Écran de JEU -->
   <section id="screen-game" class="screen" hidden>
-    <div id="hud">
-      <div>Score : <span id="hud-score">0</span></div>
-      <div>Record : <span id="hud-best">0</span></div>
-      <div>Série : <span id="hud-streak">0</span></div>
-      <div id="hud-mic-status" title="Micro">●</div>
+  <div id="hud-top" class="hud">
+    <div class="hud-left">
+      <div class="hud-label">Score</div>
+      <div class="hud-value" id="hud-score">0</div>
     </div>
-    <div id="hud-last">Dernière commande : <span id="hud-last-spoken">–</span></div>
-    <div id="game-area">(zone de jeu)</div>
-  </section>
+    <div class="hud-center">
+      <div class="hud-label">Record</div>
+      <div class="hud-value" id="hud-best">0</div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-label">Série</div>
+      <div class="hud-value" id="hud-streak">0</div>
+    </div>
+    <div class="hud-mic" id="hud-mic-status">●</div>
+  </div>
+
+  <div id="game-area" class="game-placeholder">(zone de jeu)</div>
+
+  <div class="hud-bottom">
+    <div class="hud-label">Dernière commande :</div>
+    <div class="hud-value" id="hud-last-spoken">–</div>
+  </div>
+</section>
+
 
   <!-- Écran PAUSE -->
   <section id="screen-pause" class="screen" hidden>
