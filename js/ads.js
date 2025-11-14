@@ -1,116 +1,142 @@
 // ============================================================
-// Parle ou perd ! - js/ads.js
+// Parle ou perd ! - js/game.js (corrigé)
 // ------------------------------------------------------------
-// Rôle : gestion de la pub (bannières + rewarded) à travers un bridge Android
-// ou un mode debug (simulé). Pas d’accès direct à AdMob ici.
+// Rôle : moteur principal du jeu (logique, score, séquence, etc.)
 // ============================================================
 (function () {
   "use strict";
 
   const CONFIG = window.POP_CONFIG || {};
   const STATE = (window.POP_STATE = window.POP_STATE || {});
-  STATE.ads = STATE.ads || {};
 
-  let mode = "disabled";
-  let bannerContainer = null;
-  let bannerBox = null;
+  let score = 0;
+  let bestScore = 0;
+  let streak = 0;
 
-  let pendingRewardCallback = null;
+  let goodCommands = 0;
+  let badCommands = 0;
 
-  function hasAndroidBridge() {
-    return (
-      window.AndroidAds &&
-      typeof window.AndroidAds.showBanner === "function" &&
-      typeof window.AndroidAds.hideBanner === "function" &&
-      typeof window.AndroidAds.showRewarded === "function"
-    );
-  }
+  let isRunning = false;
 
-  function initAds() {
-    const ADS_CFG = CONFIG.ads || {};
-    if (!ADS_CFG.enabled) {
-      mode = "disabled";
-      return;
+  function initGame() {
+    console.log("[game] initGame()");
+    score = 0;
+    streak = 0;
+    goodCommands = 0;
+    badCommands = 0;
+    isRunning = false;
+
+    try {
+      bestScore = parseInt(localStorage.getItem(CONFIG.storageKeys.bestScore)) || 0;
+    } catch (e) {
+      bestScore = 0;
     }
 
-    bannerContainer = document.getElementById("ad-banner-container");
-    bannerBox = document.getElementById("ad-banner");
+    if (window.POP_UI?.onGameReady) {
+      window.POP_UI.onGameReady({ bestScore });
+    }
+  }
 
-    if (hasAndroidBridge()) {
-      mode = "android";
-      console.log("[ads] Mode Android bridge actif");
+  function startNewGame() {
+    console.log("[game] startNewGame()");
+    score = 0;
+    streak = 0;
+    goodCommands = 0;
+    badCommands = 0;
+    isRunning = true;
+
+    if (window.POP_UI?.showGameScreen) window.POP_UI.showGameScreen();
+    updateHUD();
+  }
+
+  function simulateCommand(cmd) {
+    if (!isRunning) return;
+    const valid = ["saute", "baisse", "gauche", "droite"];
+    const isGood = valid.includes(cmd.toLowerCase());
+
+    if (isGood) {
+      score++;
+      streak++;
+      goodCommands++;
     } else {
-      mode = "debug";
-      console.log("[ads] Mode DEBUG actif");
+      streak = 0;
+      badCommands++;
     }
-  }
 
-  function showBanner(screenName) {
-    const allowed = CONFIG?.ads?.bannerScreens?.[screenName];
-    if (allowed === false) return;
-
-    if (mode === "android") {
+    if (score > bestScore) {
+      bestScore = score;
       try {
-        window.AndroidAds.showBanner(screenName);
-      } catch (e) {
-        console.warn("[ads] erreur AndroidAds.showBanner", e);
-      }
-      return;
+        localStorage.setItem(CONFIG.storageKeys.bestScore, bestScore);
+      } catch (e) {}
     }
 
-    if (mode === "debug" && bannerContainer) {
-      bannerContainer.style.display = "flex";
-      bannerBox.textContent = "PUB DEBUG - écran : " + screenName;
-    }
-  }
-
-  function hideBanner() {
-    if (mode === "android") {
-      try {
-        window.AndroidAds.hideBanner();
-      } catch (e) {
-        console.warn("[ads] erreur AndroidAds.hideBanner", e);
-      }
-      return;
+    if (window.POP_UI?.updateLastCommand) {
+      window.POP_UI.updateLastCommand({ text: cmd, recognized: isGood });
     }
 
-    if (mode === "debug" && bannerContainer) {
-      bannerContainer.style.display = "none";
-      bannerBox.textContent = "";
+    updateHUD();
+
+    if (!isGood) {
+      endGame();
     }
   }
 
-  function showRewarded(onComplete) {
-    if (mode === "android") {
-      try {
-        pendingRewardCallback = onComplete;
-        window.AndroidAds.showRewarded();
-      } catch (e) {
-        console.warn("[ads] erreur AndroidAds.showRewarded", e);
-        onComplete?.();
-      }
-      return;
-    }
-
-    if (mode === "debug") {
-      console.log("[ads] Simulation pub rewarded (debug)...");
-      setTimeout(() => {
-        onComplete?.();
-      }, 2000);
+  function updateHUD() {
+    if (window.POP_UI?.updateHUD) {
+      window.POP_UI.updateHUD({ score, bestScore, streak });
     }
   }
 
-  function onAndroidRewardedComplete(success) {
-    const cb = pendingRewardCallback;
-    pendingRewardCallback = null;
-    if (success && typeof cb === "function") cb();
+  function endGame() {
+    if (!isRunning) return; // ❌ empêche double fin
+    console.log("[game] endGame()");
+    isRunning = false;
+
+    const total = goodCommands + badCommands;
+    const percent = total > 0 ? Math.round((goodCommands / total) * 100) : 0;
+
+    if (window.POP_UI?.showGameOverScreen) {
+      window.POP_UI.showGameOverScreen({
+        score,
+        bestScore,
+        bestStreak: streak,
+        precisionPercent: percent,
+        canUseRewarded: true
+      });
+    }
   }
 
-  window.POP_Ads = {
-    initAds,
-    showBanner,
-    hideBanner,
-    showRewarded,
-    onAndroidRewardedComplete
+  function resumeGame() {
+    isRunning = true;
+    if (window.POP_UI?.onGameResumed) window.POP_UI.onGameResumed();
+  }
+
+  function pauseGame() {
+    if (!isRunning) return;
+    isRunning = false;
+    if (window.POP_UI?.onGamePaused) window.POP_UI.onGamePaused();
+  }
+
+  function getStateSnapshot() {
+    return { score, bestScore, streak, isRunning };
+  }
+
+  function requestRewardedContinue() {
+    if (!window.POP_Ads?.showRewarded) return;
+    window.POP_Ads.showRewarded(() => {
+      console.log("[game] rewarded OK, on continue");
+      isRunning = true;
+      if (window.POP_UI?.showGameScreen) window.POP_UI.showGameScreen();
+    });
+  }
+
+  window.POP_Game = {
+    initGame,
+    startNewGame,
+    resumeGame,
+    pauseGame,
+    getStateSnapshot,
+    simulateCommand,
+    requestRewardedContinue
   };
 })();
