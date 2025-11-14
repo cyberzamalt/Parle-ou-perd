@@ -1,0 +1,429 @@
+/* ============================================================
+   Parle ou perd ! - Feuille de style principale
+   Objectif : rendu "appli mobile" simple, lisible, sans fioritures.
+   ============================================================ */
+
+/* ---------- RESET SIMPLE ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* ---------- STYLE GLOBAL ---------- */
+
+body {
+  /* Fond sombre pour faire ressortir le contenu (effet "jeu mobile") */
+  background: radial-gradient(circle at top, #1f2933 0, #050816 60%, #020308 100%);
+  color: #f9fafb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Pour éviter les scrollbars horizontales inutiles */
+body {
+  overflow-x: hidden;
+}
+
+/* ---------- ÉCRANS / LAYOUT PRINCIPAL ---------- */
+
+/*
+  Chaque "screen" est une page entière de l'app
+  (menu, aide, options, jeu, pause, game over).
+  ui.js se contentera de les afficher/masquer (hidden ou non).
+*/
+.screen {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
+/* Conteneur interne : comme une "carte" d'appli */
+.screen::before {
+  /* Décor léger en arrière-plan (sans bloquer la lisibilité) */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 0, rgba(76, 106, 255, 0.25), transparent 55%),
+              radial-gradient(circle at 80% 100%, rgba(16, 185, 129, 0.25), transparent 55%);
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/*
+  Les sections internes (.screen-header / content / footer)
+  doivent être au-dessus du décor.
+*/
+.screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* En desktop, on centre un bloc type "téléphone" */
+@media (min-width: 768px) {
+  .screen {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .screen > * {
+    max-width: 420px;
+    width: 100%;
+  }
+}
+
+/* Sur mobile, on occupe tout l'écran */
+@media (max-width: 767.98px) {
+  .screen {
+    padding: 12px 10px 60px; /* petit espace en bas pour le bandeau pub */
+  }
+
+  .screen-header,
+  .screen-content,
+  .screen-footer {
+    max-width: 480px;
+    width: 100%;
+    margin-inline: auto;
+  }
+}
+
+/* ---------- STRUCTURE INTERNE DES ÉCRANS ---------- */
+
+.screen-header {
+  padding: 12px 16px 8px;
+  text-align: center;
+}
+
+.screen-content {
+  flex: 1;
+  padding: 8px 16px;
+  overflow-y: auto; /* au cas où il y a un peu trop de texte */
+}
+
+.screen-footer {
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ---------- TITRES / TEXTES ---------- */
+
+.game-title {
+  font-size: 1.8rem;
+  margin: 0 0 4px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.game-tagline {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #d1d5db;
+}
+
+/* Sous-titres des écrans (Aide, Options, Pause, etc.) */
+.screen-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+/* Paragraphes généraux */
+.screen-content p {
+  margin: 8px 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Listes en fin de partie */
+.gameover-stats {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 12px;
+  font-size: 0.95rem;
+}
+
+.gameover-stats li {
+  margin-bottom: 4px;
+}
+
+.gameover-feedback {
+  margin: 8px 0 16px;
+  font-weight: 500;
+}
+
+/* ---------- BOUTONS ---------- */
+
+.btn {
+  border: none;
+  border-radius: 999px; /* pilule arrondie */
+  padding: 10px 18px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
+  min-width: 120px;
+}
+
+/* Bouton principal = "action majeure" (JOUER / REPRENDRE, etc.) */
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #22c55e);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.7);
+}
+
+/* Bouton secondaire = navigation (retour, menu, rejouer) */
+.btn-secondary {
+  background: rgba(15, 23, 42, 0.85);
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+}
+
+/* Bouton "danger / attention" (reset record) */
+.btn-warning {
+  background: #b91c1c;
+  color: #fee2e2;
+}
+
+/* Effet pressé / hover simple */
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: none;
+}
+
+.btn:hover {
+  filter: brightness(1.05);
+}
+
+/* Ensemble des boutons secondaires sur l'écran menu */
+.menu-secondary-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Texte de record sous le menu */
+.menu-record {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: #d1d5db;
+}
+
+/* ---------- OPTIONS : LIGNES (label + input) ---------- */
+
+.option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.option-row label {
+  flex: 1 1 auto;
+}
+
+.option-row input[type="range"],
+.option-row select,
+.option-row input[type="checkbox"] {
+  flex: 0 0 auto;
+}
+
+/* Pour que le slider ne prenne pas tout l'écran */
+.option-row input[type="range"] {
+  width: 50%;
+}
+
+/* ---------- HUD (BARRES EN JEU) ---------- */
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 12px;
+}
+
+/* Haut de l'écran de jeu */
+#hud-top {
+  margin: 4px 0 8px;
+}
+
+/* Bas de l'écran de jeu (commands + dernière commande) */
+.hud-bottom {
+  margin: 8px 0 4px;
+  flex-wrap: wrap;
+}
+
+/* Regroupement HUD gauche/centre/droite/micro */
+.hud-left,
+.hud-center,
+.hud-right,
+.hud-mic {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+/* Libellés + valeurs */
+.hud-label {
+  color: #9ca3af;
+  font-size: 0.77rem;
+}
+
+.hud-value {
+  font-weight: 600;
+}
+
+/* Icône micro (●) : la couleur sera modifiée par ui.js/voice.js si besoin */
+.hud-mic-icon {
+  font-size: 0.9rem;
+  color: #22c55e; /* vert par défaut = OK */
+}
+
+/* Zone des commandes textuelles (SAUTE, BAISSE, etc.) */
+.hud-commands {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-command {
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  font-size: 0.7rem;
+}
+
+/* Bloc "Dernière commande" */
+.hud-last-command {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---------- ZONE DE JEU (RUNNER + OBSTACLES) ---------- */
+
+.game-layout {
+  /* Le coeur de l'écran : on laisse de la place au HUD haut/bas */
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0;
+}
+
+/*
+  #game-area est le conteneur principal du jeu.
+  Plus tard, game.js décidera si on utilise un canvas
+  ou des <div> pour le runner et les obstacles.
+*/
+#game-area {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 9 / 16; /* format écran téléphone vertical */
+  border-radius: 18px;
+  background: linear-gradient(to top, #020617, #0b1120);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Placeholder minimum tant que le vrai rendu du jeu n'est pas codé */
+.game-placeholder {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #9ca3af;
+  text-align: center;
+  padding: 10px;
+}
+
+/* ---------- BLOC PUB GAME OVER (REWARDED) ---------- */
+
+.gameover-rewarded {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px dashed rgba(234, 179, 8, 0.7);
+  font-size: 0.9rem;
+}
+
+/* ---------- BANDEAU PUBLICITAIRE GLOBAL ---------- */
+
+/*
+  Le conteneur ads est indépendant des "screens" :
+  il reste en bas de l'écran, quelle que soit la page affichée.
+  ui.js + ads.js décideront de le montrer / cacher.
+*/
+#ad-banner-container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 50px; /* hauteur standard approximative pour une bannière */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* clics désactivés par défaut */
+  z-index: 50; /* au-dessus du reste */
+}
+
+/* Zone réelle de la bannière (cliquable quand une vraie pub sera là) */
+#ad-banner {
+  width: 100%;
+  max-width: 468px; /* format classique 468x60 ou équivalent */
+  height: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 10px 10px 0 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.6);
+  box-shadow: 0 -4px 10px rgba(15, 23, 42, 0.8);
+  pointer-events: auto; /* réactivé pour la zone elle-même */
+}
+
+/*
+  Par défaut, il n'y a pas de vraie pub, donc ads.js
+  pourra laisser ce bloc vide ou y mettre un message de debug.
+*/
+
+/* ---------- DIVERS / ÉTATS ---------- */
+
+/* On pourra utiliser cette classe plus tard si on veut désactiver un bouton */
+.btn[disabled],
+.btn.disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Scrollbars un peu plus discrètes (option visuelle) */
+.screen-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.screen-content::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.8);
+  border-radius: 999px;
+}
