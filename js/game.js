@@ -1,5 +1,5 @@
 // ============================================================
-// Parle ou perd ! - js/game.js
+// Parle ou perd ! - js/game.js (corrigé)
 // ------------------------------------------------------------
 // Rôle : moteur principal du jeu (logique, score, séquence, etc.)
 // ============================================================
@@ -9,19 +9,15 @@
   const CONFIG = window.POP_CONFIG || {};
   const STATE = (window.POP_STATE = window.POP_STATE || {});
 
-  // Score et état du joueur
   let score = 0;
   let bestScore = 0;
   let streak = 0;
 
-  // Statistiques vocales (ex : reconnaissance)
   let goodCommands = 0;
   let badCommands = 0;
 
-  // Etat interne du jeu
   let isRunning = false;
 
-  // Init minimal
   function initGame() {
     console.log("[game] initGame()");
     score = 0;
@@ -36,13 +32,11 @@
       bestScore = 0;
     }
 
-    // Optionnel : informer UI qu'on est prêt
     if (window.POP_UI?.onGameReady) {
       window.POP_UI.onGameReady({ bestScore });
     }
   }
 
-  // Nouvelle partie
   function startNewGame() {
     console.log("[game] startNewGame()");
     score = 0;
@@ -55,7 +49,6 @@
     updateHUD();
   }
 
-  // Simule une commande reconnue (debug / test)
   function simulateCommand(cmd) {
     if (!isRunning) return;
     const valid = ["saute", "baisse", "gauche", "droite"];
@@ -88,15 +81,14 @@
     }
   }
 
-  // Mise à jour du HUD
   function updateHUD() {
     if (window.POP_UI?.updateHUD) {
       window.POP_UI.updateHUD({ score, bestScore, streak });
     }
   }
 
-  // Fin de partie
   function endGame() {
+    if (!isRunning) return; // ❌ empêche double fin
     console.log("[game] endGame()");
     isRunning = false;
 
@@ -109,29 +101,26 @@
         bestScore,
         bestStreak: streak,
         precisionPercent: percent,
-        canUseRewarded: true // AdMob ici plus tard
+        canUseRewarded: true
       });
     }
   }
 
-  // Reprendre (depuis pause)
   function resumeGame() {
     isRunning = true;
     if (window.POP_UI?.onGameResumed) window.POP_UI.onGameResumed();
   }
 
-  // Pause
   function pauseGame() {
+    if (!isRunning) return;
     isRunning = false;
     if (window.POP_UI?.onGamePaused) window.POP_UI.onGamePaused();
   }
 
-  // Getter état actuel
   function getStateSnapshot() {
     return { score, bestScore, streak, isRunning };
   }
 
-  // Rewarded ads (CONTINUER)
   function requestRewardedContinue() {
     if (!window.POP_Ads?.showRewarded) return;
     window.POP_Ads.showRewarded(() => {
