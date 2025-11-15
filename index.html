@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Parle ou perd !</title>
-  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <!-- Menu principal -->
@@ -52,14 +52,14 @@
 
   <!-- Jeu -->
   <section id="screen-game" hidden>
-    <div class="scoreboard">
+    <div id="hud">
       <span>Score <span id="hud-score">0</span></span>
       <span>Record <span id="hud-best">0</span></span>
       <span>Série <span id="hud-streak">0</span></span>
       <span id="hud-last-spoken">Dernière commande : –</span>
     </div>
-    <div id="game-zone">
-      <!-- zone de jeu dynamique : éléments injectés par engine.js -->
+    <div id="game-container">
+      <div id="game-area">(zone de jeu)</div>
     </div>
   </section>
 
