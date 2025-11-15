@@ -49,10 +49,8 @@
     recognition.onend = () => {
       isListening = false;
       updateMicStatus({ supported: true, isListening });
-      // Redémarre automatiquement si en jeu
-      if (STATE?.ui?.currentScreen === "game") {
-        startListening();
-      }
+      // Redémarre automatiquement sans dépendre d'un écran
+      startListening();
     };
 
     recognition.onresult = (event) => {
@@ -96,7 +94,6 @@
 
   function setSensitivity(level) {
     sensitivity = level;
-    // Optionnel : modifier comportement en fonction de la sensibilité
   }
 
   function updateMicStatus(status) {
