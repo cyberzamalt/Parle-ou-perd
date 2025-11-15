@@ -2,7 +2,7 @@
 // Parle ou perd ! - js/ui.js
 // ------------------------------------------------------------
 // Rôle : gestion de l'interface utilisateur (navigation, HUD)
-// Attente du micro prêt avant d'afficher le jeu + lancement moteur
+// Lance le jeu uniquement après que le micro est prêt
 // ============================================================
 (function () {
   "use strict";
@@ -21,27 +21,26 @@
   }
 
   function attachOptionsListeners() {
-    const volumeSlider = document.getElementById("options-volume");
-    const sensitivitySelect = document.getElementById("options-sensitivity");
-    const vibrationCheckbox = document.getElementById("options-vibration");
-    const resetButton = document.getElementById("options-reset");
+    const volumeSlider = document.getElementById("option-volume");
+    const sensitivitySelect = document.getElementById("option-mic-sensitivity");
+    const vibrationCheckbox = document.getElementById("option-vibration");
+    const resetButton = document.getElementById("option-reset-record");
 
     if (volumeSlider) {
       volumeSlider.addEventListener("input", (e) => {
-        const volume = e.target.value;
-        POP_CONFIG.volume = volume;
+        POP_CONFIG.volume = e.target.value;
       });
     }
 
     if (sensitivitySelect) {
       sensitivitySelect.addEventListener("change", (e) => {
-        const value = e.target.value;
+        POP_Voice.setSensitivity(e.target.value);
       });
     }
 
     if (vibrationCheckbox) {
       vibrationCheckbox.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
+        // à brancher si nécessaire
       });
     }
 
@@ -53,16 +52,14 @@
     }
   }
 
-  async function waitForMicroReady(timeout = 5000) {
+  function waitForMicReady(callback, timeout = 5000) {
     const start = Date.now();
-    return new Promise((resolve) => {
-      const interval = setInterval(() => {
-        if (window.POP_STATE?.voice?.ready || Date.now() - start > timeout) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 50);
-    });
+    const interval = setInterval(() => {
+      if (window.POP_STATE?.voice?.ready || Date.now() - start > timeout) {
+        clearInterval(interval);
+        callback();
+      }
+    }, 100);
   }
 
   window.POP_UI = {
@@ -75,15 +72,16 @@
     showHelpScreen() {
       showScreen("help");
     },
-    async showGameScreen() {
-      if (window.POP_Voice?.startListening) {
-        window.POP_Voice.startListening();
-      }
-      await waitForMicroReady();
+    showGameScreen() {
       showScreen("game");
-      if (window.POP_Engine?.init) {
-        window.POP_Engine.init();
+      if (POP_Voice?.startListening) {
+        POP_Voice.startListening();
       }
+      waitForMicReady(() => {
+        if (POP_Engine?.init) {
+          POP_Engine.init();
+        }
+      });
     },
     showGameOverScreen({ score, bestScore, bestStreak, precisionPercent }) {
       showScreen("gameover");
@@ -100,9 +98,6 @@
       el.textContent = text;
       el.style.color = recognized ? "lime" : "red";
     },
-    onGameReady() {},
-    onGamePaused() {},
-    onGameResumed() {},
     attachOptionsListeners
   };
 
