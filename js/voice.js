@@ -1,7 +1,7 @@
 // ============================================================
 // Parle ou perd ! - js/voice.js
 // ------------------------------------------------------------
-// Rôle : gestion du micro et de la reconnaissance vocale (optimisé, live, anti-doublon par transcript).
+// Rôle : gestion du micro et de la reconnaissance vocale (coordination démarrage jeu)
 // Utilise l'API Web Speech (SpeechRecognition) dans le navigateur.
 // ============================================================
 (function () {
@@ -9,6 +9,7 @@
 
   const STATE = (window.POP_STATE = window.POP_STATE || {});
   STATE.voice = STATE.voice || {};
+  STATE.voice.ready = false;
 
   const CONFIG = window.POP_CONFIG || {};
   let recognition = null;
@@ -41,6 +42,7 @@
     recognition.onstart = () => {
       console.log("[voice] démarré");
       isListening = true;
+      STATE.voice.ready = true;
       updateMicStatus({ supported: true, isListening });
     };
 
