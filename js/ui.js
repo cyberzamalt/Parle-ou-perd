@@ -66,8 +66,11 @@
       showScreen("help");
     },
     showGameScreen() {
-      showScreen("game");
-    },
+  showScreen("game");
+  if (window.POP_Voice?.startListening) {
+    window.POP_Voice.startListening();
+  }
+},
     showGameOverScreen({ score, bestScore, bestStreak, precisionPercent }) {
       showScreen("gameover");
       document.getElementById("gameover-score").textContent = `Score : ${score}`;
