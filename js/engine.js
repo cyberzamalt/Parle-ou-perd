@@ -65,6 +65,25 @@
     },
   };
 
+  // Détection de collision simple (AABB)
+  function checkCollision() {
+    const p = player.getBoundingClientRect();
+    const o = obstacle.getBoundingClientRect();
+    const a = area.getBoundingClientRect();
+
+    const intersect =
+      p.right > o.left &&
+      p.left < o.right &&
+      p.bottom > o.top &&
+      p.top < o.bottom;
+
+    if (intersect) {
+      player.style.background = "#aaa";
+      obstacle.style.background = "#000";
+      console.log("[engine] Collision détectée !");
+    }
+  }
+
   // Boucle d'animation
   function gameLoop() {
     obstacleX -= 2; // vitesse (pixels par frame)
@@ -73,6 +92,7 @@
     }
     obstacle.style.left = obstacleX + "px";
 
+    checkCollision();
     requestAnimationFrame(gameLoop);
   }
 
