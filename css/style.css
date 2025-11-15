@@ -41,7 +41,7 @@ button:hover {
   display: flex;
 }
 
-#gameArea {
+#game-zone {
   background-color: #222;
   width: 240px;
   height: 426px;
@@ -51,19 +51,19 @@ button:hover {
   overflow: hidden;
 }
 
-#player, #obstacle {
+.player, .obstacle {
   width: 30px;
   height: 30px;
   position: absolute;
   bottom: 10px;
 }
 
-#player {
+.player {
   background-color: #ccc;
   left: 10px;
 }
 
-#obstacle {
+.obstacle {
   background-color: #000;
   right: 10px;
 }
@@ -107,30 +107,4 @@ label {
 
 .options .button-group button {
   margin: 5px 0;
-}
-#game-zone {
-  background-color: #222;
-  width: 240px;
-  height: 426px;
-  margin: 0 auto;
-  border-radius: 10px;
-  position: relative;
-  overflow: hidden;
-}
-
-.player, .obstacle {
-  width: 30px;
-  height: 30px;
-  position: absolute;
-  bottom: 10px;
-}
-
-.player {
-  background-color: #ccc;
-  left: 10px;
-}
-
-.obstacle {
-  background-color: #000;
-  right: 10px;
 }
