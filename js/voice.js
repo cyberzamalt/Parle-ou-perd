@@ -1,7 +1,7 @@
 // ============================================================
 // Parle ou perd ! - js/voice.js
 // ------------------------------------------------------------
-// Rôle : gestion du micro et de la reconnaissance vocale.
+// Rôle : gestion du micro et de la reconnaissance vocale (réaction immédiate).
 // Utilise l'API Web Speech (SpeechRecognition) dans le navigateur.
 // ============================================================
 (function () {
@@ -31,7 +31,7 @@
 
     recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = true; // Pour réduire la latence
+    recognition.interimResults = true;
     recognition.lang = "fr-FR";
 
     recognition.onstart = () => {
@@ -55,26 +55,24 @@
     };
 
     recognition.onresult = (event) => {
-      const result = event.results[event.results.length - 1];
-      if (!result || !result[0]) return;
-      const transcript = result[0].transcript.trim().toLowerCase();
-      lastTranscript = transcript;
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const result = event.results[i];
+        const transcript = result[0].transcript.trim().toLowerCase();
+        lastTranscript = transcript;
 
-      const matched = VALID_COMMANDS.find((cmd) => transcript.includes(cmd));
-      const isValid = !!matched;
+        const matched = VALID_COMMANDS.find((cmd) => transcript.includes(cmd));
+        const isValid = !!matched;
 
-      if (window.POP_UI?.updateLastCommand) {
-        window.POP_UI.updateLastCommand({ text: transcript, recognized: isValid });
-      }
-
-      if (isValid) {
-        console.log("[voice] Commande reconnue:", matched);
-
-        if (matched === "saute" && window.POP_Engine?.jump) {
-          window.POP_Engine.jump();
+        if (window.POP_UI?.updateLastCommand && result.isFinal) {
+          window.POP_UI.updateLastCommand({ text: transcript, recognized: isValid });
         }
 
-        // Ajout possible pour autres commandes à l'avenir
+        if (isValid) {
+          console.log(`[voice] Reconnu: ${transcript} → ${matched} (${result.isFinal ? "final" : "intermédiaire"})`);
+          if (matched === "saute" && window.POP_Engine?.jump) {
+            window.POP_Engine.jump();
+          }
+        }
       }
     };
 
