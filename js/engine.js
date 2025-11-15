@@ -30,6 +30,7 @@
     background: "#4cf",
     borderRadius: "8px",
     zIndex: 10,
+    transition: "bottom 0.2s",
   });
 
   Object.assign(obstacle.style, {
@@ -50,6 +51,19 @@
 
   // Position actuelle de l'obstacle (en pixels)
   let obstacleX = area.clientWidth - 50; // Position de départ approximative
+
+  // Fonction de saut simulé (peut être appelée depuis voice.js ou game.js)
+  window.POP_Engine = {
+    jump: function () {
+      if (player.classList.contains("jumping")) return;
+      player.classList.add("jumping");
+      player.style.bottom = "100px";
+      setTimeout(() => {
+        player.style.bottom = "10px";
+        player.classList.remove("jumping");
+      }, 400);
+    },
+  };
 
   // Boucle d'animation
   function gameLoop() {
