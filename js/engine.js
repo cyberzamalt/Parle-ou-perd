@@ -1,102 +1,146 @@
 // ============================================================
-// Parle ou perd ! - js/engine.js
+// Parle ou perd ! - js/game.js (corrigé avec saut visuel)
 // ------------------------------------------------------------
-// Rôle : moteur de rendu de la zone de jeu (animation, obstacles)
-// Injecte dynamiquement le jeu dans #game-area
+// Rôle : moteur principal du jeu (logique, score, séquence, etc.)
 // ============================================================
 (function () {
   "use strict";
 
-  const area = document.getElementById("game-area");
-  if (!area) {
-    console.warn("[engine] Zone de jeu introuvable (#game-area)");
-    return;
+  const CONFIG = window.POP_CONFIG || {};
+  const STATE = (window.POP_STATE = window.POP_STATE || {});
+
+  let score = 0;
+  let bestScore = 0;
+  let streak = 0;
+
+  let goodCommands = 0;
+  let badCommands = 0;
+
+  let isRunning = false;
+
+  function initGame() {
+    console.log("[game] initGame()");
+    score = 0;
+    streak = 0;
+    goodCommands = 0;
+    badCommands = 0;
+    isRunning = false;
+
+    try {
+      bestScore = parseInt(localStorage.getItem(CONFIG.storageKeys.bestScore)) || 0;
+    } catch (e) {
+      bestScore = 0;
+    }
+
+    if (window.POP_UI?.onGameReady) {
+      window.POP_UI.onGameReady({ bestScore });
+    }
   }
 
-  // Éléments visuels à animer
-  const player = document.createElement("div");
-  const obstacle = document.createElement("div");
+  function startNewGame() {
+    console.log("[game] startNewGame()");
+    score = 0;
+    streak = 0;
+    goodCommands = 0;
+    badCommands = 0;
+    isRunning = true;
 
-  player.id = "player";
-  obstacle.className = "obstacle";
+    if (window.POP_UI?.showGameScreen) window.POP_UI.showGameScreen();
+    updateHUD();
+  }
 
-  // Style de base
-  Object.assign(player.style, {
-    position: "absolute",
-    bottom: "10px",
-    left: "40px",
-    width: "40px",
-    height: "40px",
-    background: "#4cf",
-    borderRadius: "8px",
-    zIndex: 10,
-    transition: "bottom 0.2s",
-  });
+  function simulateCommand(cmd) {
+    if (!isRunning) return;
+    const valid = ["saute", "baisse", "gauche", "droite"];
+    const isGood = valid.includes(cmd.toLowerCase());
 
-  Object.assign(obstacle.style, {
-    position: "absolute",
-    bottom: "10px",
-    right: "0px",
-    width: "40px",
-    height: "40px",
-    background: "#f44",
-    borderRadius: "8px",
-    zIndex: 9,
-  });
+    if (isGood) {
+      score++;
+      streak++;
+      goodCommands++;
 
-  // Injection dans la zone de jeu
-  area.innerHTML = ""; // Clear
-  area.appendChild(player);
-  area.appendChild(obstacle);
+      if (cmd.toLowerCase() === "saute") {
+        window.POP_Engine?.jump?.();
+      }
+    } else {
+      streak = 0;
+      badCommands++;
+    }
 
-  // Position actuelle de l'obstacle (en pixels)
-  let obstacleX = area.clientWidth - 50; // Position de départ approximative
+    if (score > bestScore) {
+      bestScore = score;
+      try {
+        localStorage.setItem(CONFIG.storageKeys.bestScore, bestScore);
+      } catch (e) {}
+    }
 
-  // Fonction de saut simulé (peut être appelée depuis voice.js ou game.js)
-  window.POP_Engine = {
-    jump: function () {
-      if (player.classList.contains("jumping")) return;
-      player.classList.add("jumping");
-      player.style.bottom = "100px";
-      setTimeout(() => {
-        player.style.bottom = "10px";
-        player.classList.remove("jumping");
-      }, 400);
-    },
+    if (window.POP_UI?.updateLastCommand) {
+      window.POP_UI.updateLastCommand({ text: cmd, recognized: isGood });
+    }
+
+    updateHUD();
+
+    if (!isGood) {
+      endGame();
+    }
+  }
+
+  function updateHUD() {
+    if (window.POP_UI?.updateHUD) {
+      window.POP_UI.updateHUD({ score, bestScore, streak });
+    }
+  }
+
+  function endGame() {
+    if (!isRunning) return;
+    console.log("[game] endGame()");
+    isRunning = false;
+
+    const total = goodCommands + badCommands;
+    const percent = total > 0 ? Math.round((goodCommands / total) * 100) : 0;
+
+    if (window.POP_UI?.showGameOverScreen) {
+      window.POP_UI.showGameOverScreen({
+        score,
+        bestScore,
+        bestStreak: streak,
+        precisionPercent: percent,
+        canUseRewarded: true
+      });
+    }
+  }
+
+  function resumeGame() {
+    isRunning = true;
+    if (window.POP_UI?.onGameResumed) window.POP_UI.onGameResumed();
+  }
+
+  function pauseGame() {
+    if (!isRunning) return;
+    isRunning = false;
+    if (window.POP_UI?.onGamePaused) window.POP_UI.onGamePaused();
+  }
+
+  function getStateSnapshot() {
+    return { score, bestScore, streak, isRunning };
+  }
+
+  function requestRewardedContinue() {
+    if (!window.POP_Ads?.showRewarded) return;
+    window.POP_Ads.showRewarded(() => {
+      console.log("[game] rewarded OK, on continue");
+      isRunning = true;
+      if (window.POP_UI?.showGameScreen) window.POP_UI.showGameScreen();
+    });
+  }
+
+  window.POP_Game = {
+    initGame,
+    startNewGame,
+    resumeGame,
+    pauseGame,
+    getStateSnapshot,
+    simulateCommand,
+    requestRewardedContinue
   };
-
-  // Détection de collision simple (AABB)
-  function checkCollision() {
-    const p = player.getBoundingClientRect();
-    const o = obstacle.getBoundingClientRect();
-    const a = area.getBoundingClientRect();
-
-    const intersect =
-      p.right > o.left &&
-      p.left < o.right &&
-      p.bottom > o.top &&
-      p.top < o.bottom;
-
-    if (intersect) {
-      player.style.background = "#aaa";
-      obstacle.style.background = "#000";
-      console.log("[engine] Collision détectée !");
-    }
-  }
-
-  // Boucle d'animation
-  function gameLoop() {
-    obstacleX -= 2; // vitesse (pixels par frame)
-    if (obstacleX < -40) {
-      obstacleX = area.clientWidth + Math.random() * 100; // boucle + variation
-    }
-    obstacle.style.left = obstacleX + "px";
-
-    checkCollision();
-    requestAnimationFrame(gameLoop);
-  }
-
-  // Démarrage moteur
-  console.log("[engine] Moteur lancé");
-  requestAnimationFrame(gameLoop);
 })();
