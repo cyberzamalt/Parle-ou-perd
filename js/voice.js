@@ -1,32 +1,23 @@
 // ============================================================
 // Parle ou perd ! - js/voice.js
 // ------------------------------------------------------------
-// Rôle : gestion du micro et de la reconnaissance vocale (coordination démarrage jeu)
+// Rôle : gestion du micro et de la reconnaissance vocale.
 // Utilise l'API Web Speech (SpeechRecognition) dans le navigateur.
 // ============================================================
 (function () {
   "use strict";
 
   const STATE = (window.POP_STATE = window.POP_STATE || {});
-  STATE.voice = STATE.voice || {};
-  STATE.voice.ready = false;
+  STATE.voice = STATE.voice || { ready: false };
 
   const CONFIG = window.POP_CONFIG || {};
   let recognition = null;
-  let isSupported = false;
   let isListening = false;
-  let errorCode = null;
-  let lastTranscript = "";
-  let lastExecutedCommand = "";
   let lastCommandTime = 0;
-  let lastHandledTranscript = "";
-  let sensitivity = CONFIG.voice?.defaultSensitivity || "medium";
 
   const VALID_COMMANDS = ["saute", "baisse", "gauche", "droite"];
-  const MIN_COMMAND_DELAY_MS = 500;
 
   function initVoice() {
-    console.log("[voice] initVoice lancé");
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn("[voice] API Web Speech non supportée");
@@ -40,85 +31,76 @@
     recognition.lang = "fr-FR";
 
     recognition.onstart = () => {
-      console.log("[voice] démarré");
       isListening = true;
       STATE.voice.ready = true;
-      updateMicStatus({ supported: true, isListening });
+      updateMicStatus({ supported: true, isListening: true });
+      console.log("[voice] démarré");
     };
 
     recognition.onerror = (event) => {
       console.warn("[voice] erreur:", event.error);
-      errorCode = event.error;
       isListening = false;
-      updateMicStatus({ supported: true, isListening, errorCode });
+      updateMicStatus({ supported: true, isListening: false, errorCode: event.error });
     };
 
     recognition.onend = () => {
-      console.log("[voice] arrêt (reprise automatique)");
       isListening = false;
-      updateMicStatus({ supported: true, isListening });
-      startListening();
+      updateMicStatus({ supported: true, isListening: false });
+      setTimeout(startListening, 1000);
     };
 
     recognition.onresult = (event) => {
+      const result = event.results[event.results.length - 1];
+      if (!result || !result[0]) return;
+
+      const transcript = result[0].transcript.trim().toLowerCase();
+      const isFinal = result.isFinal;
+      const command = VALID_COMMANDS.find(cmd => transcript.includes(cmd));
       const now = Date.now();
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const result = event.results[i];
-        const transcript = result[0].transcript.trim().toLowerCase();
-        lastTranscript = transcript;
 
-        const matched = VALID_COMMANDS.find((cmd) => transcript.includes(cmd));
-        const isValid = !!matched;
+      if (command && (now - lastCommandTime > 600)) {
+        console.log(`[voice] Exécution: ${command} (final: ${isFinal}) après ${now - lastCommandTime}ms`);
+        lastCommandTime = now;
 
-        if (window.POP_UI?.updateLastCommand && result.isFinal) {
-          window.POP_UI.updateLastCommand({ text: transcript, recognized: isValid });
+        if (window.POP_Game?.simulateCommand) {
+          window.POP_Game.simulateCommand(command);
         }
 
-        if (isValid) {
-          const delaySinceLast = now - lastCommandTime;
-
-          if (transcript !== lastHandledTranscript && (matched !== lastExecutedCommand || delaySinceLast > MIN_COMMAND_DELAY_MS)) {
-            lastHandledTranscript = transcript;
-            lastExecutedCommand = matched;
-            lastCommandTime = now;
-
-            console.log(`[voice] Exécution: ${matched} (final: ${result.isFinal}) après ${delaySinceLast}ms`);
-
-            if (matched === "saute" && window.POP_Engine?.jump) {
-              POP_Engine.jump();
-            }
-          } else {
-            console.log(`[voice] Ignoré (doublon ou trop proche): ${matched} (${delaySinceLast}ms)`);
-          }
+        if (window.POP_UI?.updateLastCommand) {
+          window.POP_UI.updateLastCommand({ text: transcript, recognized: true });
         }
+
+      } else if (command) {
+        console.log(`[voice] Ignoré (doublon ou trop proche): ${command}`);
       }
     };
 
-    isSupported = true;
-    updateMicStatus({ supported: true, isListening });
+    updateMicStatus({ supported: true, isListening: false });
   }
 
   function startListening() {
-    console.log("[voice] startListening called");
-    if (!recognition || isListening) return;
-    try {
-      recognition.start();
-    } catch (e) {
-      console.warn("[voice] start() failed:", e);
+    if (recognition && !isListening) {
+      try {
+        recognition.start();
+        console.log("[voice] startListening called");
+      } catch (e) {
+        console.warn("[voice] start() failed:", e);
+      }
     }
   }
 
   function stopListening() {
-    if (!recognition || !isListening) return;
-    try {
-      recognition.stop();
-    } catch (e) {
-      console.warn("[voice] stop() failed:", e);
+    if (recognition && isListening) {
+      try {
+        recognition.stop();
+      } catch (e) {
+        console.warn("[voice] stop() failed:", e);
+      }
     }
   }
 
   function setSensitivity(level) {
-    sensitivity = level;
+    // Option disponible, non utilisée dans cette version
   }
 
   function updateMicStatus(status) {
@@ -134,8 +116,4 @@
     stopListening,
     setSensitivity
   };
-
-  document.addEventListener("DOMContentLoaded", () => {
-    initVoice();
-  });
 })();
