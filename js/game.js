@@ -1,7 +1,7 @@
 // ============================================================
-// Parle ou perd ! - js/game.js (corrigé)
+// Parle ou perd ! - js/game.js
 // ------------------------------------------------------------
-// Rôle : moteur principal du jeu (logique, score, séquence, etc.)
+// Rôle : logique principale du jeu (score, commandes, fin)
 // ============================================================
 (function () {
   "use strict";
@@ -19,7 +19,6 @@
   let isRunning = false;
 
   function initGame() {
-    console.log("[game] initGame()");
     score = 0;
     streak = 0;
     goodCommands = 0;
@@ -38,7 +37,6 @@
   }
 
   function startNewGame() {
-    console.log("[game] startNewGame()");
     score = 0;
     streak = 0;
     goodCommands = 0;
@@ -58,6 +56,10 @@
       score++;
       streak++;
       goodCommands++;
+
+      if (cmd.toLowerCase() === "saute") {
+        window.POP_Engine?.jump?.();
+      }
     } else {
       streak = 0;
       badCommands++;
@@ -88,8 +90,7 @@
   }
 
   function endGame() {
-    if (!isRunning) return; // ❌ empêche double fin
-    console.log("[game] endGame()");
+    if (!isRunning) return;
     isRunning = false;
 
     const total = goodCommands + badCommands;
@@ -124,7 +125,6 @@
   function requestRewardedContinue() {
     if (!window.POP_Ads?.showRewarded) return;
     window.POP_Ads.showRewarded(() => {
-      console.log("[game] rewarded OK, on continue");
       isRunning = true;
       if (window.POP_UI?.showGameScreen) window.POP_UI.showGameScreen();
     });
