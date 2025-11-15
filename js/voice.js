@@ -1,7 +1,7 @@
 // ============================================================
 // Parle ou perd ! - js/voice.js
 // ------------------------------------------------------------
-// Rôle : gestion du micro et de la reconnaissance vocale (réaction immédiate).
+// Rôle : gestion du micro et de la reconnaissance vocale (réaction immédiate avec filtre anti-doublon).
 // Utilise l'API Web Speech (SpeechRecognition) dans le navigateur.
 // ============================================================
 (function () {
@@ -16,9 +16,12 @@
   let isListening = false;
   let errorCode = null;
   let lastTranscript = "";
+  let lastExecutedCommand = "";
+  let lastCommandTime = 0;
   let sensitivity = CONFIG.voice?.defaultSensitivity || "medium";
 
   const VALID_COMMANDS = ["saute", "baisse", "gauche", "droite"];
+  const MIN_COMMAND_DELAY_MS = 1000;
 
   function initVoice() {
     console.log("[voice] initVoice lancé");
@@ -68,9 +71,17 @@
         }
 
         if (isValid) {
-          console.log(`[voice] Reconnu: ${transcript} → ${matched} (${result.isFinal ? "final" : "intermédiaire"})`);
-          if (matched === "saute" && window.POP_Engine?.jump) {
-            window.POP_Engine.jump();
+          const now = Date.now();
+          if (matched !== lastExecutedCommand || now - lastCommandTime > MIN_COMMAND_DELAY_MS) {
+            lastExecutedCommand = matched;
+            lastCommandTime = now;
+
+            console.log(`[voice] Exécution: ${matched} (${result.isFinal ? "final" : "intermédiaire"})`);
+            if (matched === "saute" && window.POP_Engine?.jump) {
+              window.POP_Engine.jump();
+            }
+          } else {
+            console.log(`[voice] Commande ignorée (trop rapprochée): ${matched}`);
           }
         }
       }
