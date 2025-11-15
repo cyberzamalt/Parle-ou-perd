@@ -2,6 +2,7 @@
 // Parle ou perd ! - js/ui.js
 // ------------------------------------------------------------
 // Rôle : gestion de l'interface utilisateur (navigation, HUD)
+// Appelle startListening() dès l'affichage du jeu
 // ============================================================
 (function () {
   "use strict";
@@ -29,21 +30,18 @@
       volumeSlider.addEventListener("input", (e) => {
         const volume = e.target.value;
         POP_CONFIG.volume = volume;
-        // On pourrait appeler ici une fonction pour appliquer le volume
       });
     }
 
     if (sensitivitySelect) {
       sensitivitySelect.addEventListener("change", (e) => {
         const value = e.target.value;
-        // Appliquer la sensibilité si nécessaire
       });
     }
 
     if (vibrationCheckbox) {
       vibrationCheckbox.addEventListener("change", (e) => {
         const enabled = e.target.checked;
-        // Appliquer ou non la vibration
       });
     }
 
@@ -66,11 +64,11 @@
       showScreen("help");
     },
     showGameScreen() {
-  showScreen("game");
-  if (window.POP_Voice?.startListening) {
-    window.POP_Voice.startListening();
-  }
-},
+      showScreen("game");
+      if (window.POP_Voice?.startListening) {
+        window.POP_Voice.startListening();
+      }
+    },
     showGameOverScreen({ score, bestScore, bestStreak, precisionPercent }) {
       showScreen("gameover");
       document.getElementById("gameover-score").textContent = `Score : ${score}`;
@@ -92,7 +90,6 @@
     attachOptionsListeners
   };
 
-  // Initialisation dès le chargement
   document.addEventListener("DOMContentLoaded", () => {
     attachOptionsListeners();
   });
