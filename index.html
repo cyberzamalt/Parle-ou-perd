@@ -1,72 +1,82 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parle ou perd</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parle ou perd !</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <section id="screen-menu" class="screen">
+  <!-- Menu principal -->
+  <section id="screen-menu">
     <h1>Parle ou perd !</h1>
-    <button onclick="POP_Game.startNewGame()">JOUER</button>
+    <p>Donne les bons ordres à voix haute</p>
+    <button onclick="POP_UI.showGameScreen()">JOUER</button>
     <button onclick="POP_UI.showOptionsScreen()">OPTIONS</button>
     <button onclick="POP_UI.showHelpScreen()">AIDE</button>
+    <p>Record : <span id="hud-best">0</span> commande(s)</p>
   </section>
 
-  <section id="screen-options" class="screen" hidden>
+  <!-- Options -->
+  <section id="screen-options" hidden>
     <h2>Options</h2>
-    <button onclick="POP_UI.showMenuScreen()">MENU</button>
+    <label>
+      Volume :
+      <input type="range" id="option-volume" min="0" max="1" step="0.01">
+    </label>
+    <br>
+    <label>
+      Sensibilité micro :
+      <select id="option-mic-sensitivity">
+        <option value="low">Faible</option>
+        <option value="medium" selected>Moyenne</option>
+        <option value="high">Haute</option>
+      </select>
+    </label>
+    <br>
+    <label>
+      <input type="checkbox" id="option-vibration" checked>
+      Vibration
+    </label>
+    <br>
+    <button id="option-reset-record">RAZ RECORD</button>
+    <button onclick="POP_UI.showMenuScreen()">RETOUR</button>
   </section>
 
-  <section id="screen-help" class="screen" hidden>
-    <h2>Comment jouer ?</h2>
-    <p>Parle à haute voix pour éviter les obstacles !</p>
-    <button onclick="POP_UI.showMenuScreen()">MENU</button>
+  <!-- Aide -->
+  <section id="screen-help" hidden>
+    <h2>Aide</h2>
+    <p>Dis SAUTE / BAISSE / GAUCHE / DROITE pour éviter les obstacles.</p>
+    <button onclick="POP_UI.showMenuScreen()">RETOUR</button>
   </section>
 
-  <section id="screen-game" class="screen" hidden>
-    <div id="hud-top" class="hud">
-      <div class="hud-left">
-        <div class="hud-label">Score</div>
-        <div class="hud-value" id="hud-score">0</div>
-      </div>
-      <div class="hud-center">
-        <div class="hud-label">Record</div>
-        <div class="hud-value" id="hud-best">0</div>
-      </div>
-      <div class="hud-right">
-        <div class="hud-label">Série</div>
-        <div class="hud-value" id="hud-streak">0</div>
-      </div>
-      <div class="hud-mic" id="hud-mic-status">●</div>
+  <!-- Jeu -->
+  <section id="screen-game" hidden>
+    <div id="hud">
+      <span>Score <span id="hud-score">0</span></span>
+      <span>Record <span id="hud-best">0</span></span>
+      <span>Série <span id="hud-streak">0</span></span>
+      <span id="hud-last-spoken">Dernière commande : –</span>
     </div>
-
-    <div id="game-area" class="game-placeholder">(zone de jeu)</div>
-
-    <div class="hud-bottom">
-      <div class="hud-label">Dernière commande :</div>
-      <div class="hud-value" id="hud-last-spoken">–</div>
+    <div id="game-container">
+      <div id="game-zone">(zone de jeu)</div>
     </div>
   </section>
 
-  <section id="screen-gameover" class="screen" hidden>
+  <!-- Fin de partie -->
+  <section id="screen-gameover" hidden>
     <h2>Fin de partie</h2>
     <p id="gameover-score">Score : 0</p>
     <p id="gameover-precision">Précision : 0%</p>
-    <button onclick="POP_Game.startNewGame()">REJOUER</button>
     <button onclick="POP_UI.showMenuScreen()">MENU</button>
   </section>
 
+  <!-- Scripts -->
   <script src="js/config.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/ads.js"></script>
-  <script src="js/game.js"></script>
   <script src="js/voice.js"></script>
+  <script src="js/game.js"></script>
   <script src="js/engine.js"></script>
-
-  <script>
-    POP_Game.initGame();
-  </script>
 </body>
 </html>
