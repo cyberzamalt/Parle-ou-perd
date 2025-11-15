@@ -2,12 +2,12 @@
 // Parle ou perd ! - js/engine.js
 // ------------------------------------------------------------
 // Rôle : moteur visuel du jeu (personnage, obstacles, collisions)
-// Démarrage synchronisé avec le micro prêt
+// Injecte dynamiquement le contenu dans #game-area
 // ============================================================
 (function () {
   "use strict";
 
-  const area = document.getElementById("game-area");
+  const area = document.getElementById("game-area"); // ✅ ID corrigé ici
   if (!area) {
     console.warn("[engine] Zone de jeu introuvable");
     return;
@@ -24,15 +24,18 @@
   area.appendChild(obstacle);
 
   let obstacleX = area.clientWidth - 50;
+  let isJumping = false;
 
   window.POP_Engine = {
     jump: function () {
-      if (player.classList.contains("jumping")) return;
+      if (isJumping) return;
+      isJumping = true;
       player.classList.add("jumping");
       player.style.bottom = "100px";
       setTimeout(() => {
         player.style.bottom = "10px";
         player.classList.remove("jumping");
+        isJumping = false;
       }, 400);
     }
   };
@@ -64,19 +67,6 @@
     requestAnimationFrame(gameLoop);
   }
 
-  function waitForVoiceReady(callback, timeout = 5000) {
-    const start = Date.now();
-    const interval = setInterval(() => {
-      if (window.POP_STATE?.voice?.ready || Date.now() - start > timeout) {
-        clearInterval(interval);
-        callback();
-      }
-    }, 50);
-  }
-
-  console.log("[engine] Initialisation du moteur. En attente du micro...");
-  waitForVoiceReady(() => {
-    console.log("[engine] Micro prêt. Démarrage du jeu...");
-    requestAnimationFrame(gameLoop);
-  });
+  console.log("[engine] Moteur lancé");
+  requestAnimationFrame(gameLoop);
 })();
