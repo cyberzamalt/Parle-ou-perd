@@ -1,5 +1,4 @@
 /* Parle ou perd ! - css/style.css */
-
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -23,22 +22,6 @@ button {
 
 button:hover {
   opacity: 0.9;
-}
-
-.menu, .options, .help, .game {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  padding: 20px;
-}
-
-.menu.active,
-.options.active,
-.help.active,
-.game.active {
-  display: flex;
 }
 
 #game-zone {
@@ -65,7 +48,7 @@ button:hover {
 
 .obstacle {
   background-color: #000;
-  right: 10px;
+  left: 220px;
 }
 
 .scoreboard {
@@ -76,7 +59,7 @@ button:hover {
   width: 240px;
 }
 
-#lastCommandDisplay {
+#hud-last-spoken {
   margin-top: 8px;
   font-size: 0.8em;
   color: #ccc;
