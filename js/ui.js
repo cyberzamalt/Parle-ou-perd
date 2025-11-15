@@ -19,6 +19,42 @@
     if (screens[key]) screens[key].hidden = false;
   }
 
+  function attachOptionsListeners() {
+    const volumeSlider = document.getElementById("options-volume");
+    const sensitivitySelect = document.getElementById("options-sensitivity");
+    const vibrationCheckbox = document.getElementById("options-vibration");
+    const resetButton = document.getElementById("options-reset");
+
+    if (volumeSlider) {
+      volumeSlider.addEventListener("input", (e) => {
+        const volume = e.target.value;
+        POP_CONFIG.volume = volume;
+        // On pourrait appeler ici une fonction pour appliquer le volume
+      });
+    }
+
+    if (sensitivitySelect) {
+      sensitivitySelect.addEventListener("change", (e) => {
+        const value = e.target.value;
+        // Appliquer la sensibilité si nécessaire
+      });
+    }
+
+    if (vibrationCheckbox) {
+      vibrationCheckbox.addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        // Appliquer ou non la vibration
+      });
+    }
+
+    if (resetButton) {
+      resetButton.addEventListener("click", () => {
+        localStorage.removeItem(POP_CONFIG.storageKeys.bestScore);
+        alert("Record réinitialisé !");
+      });
+    }
+  }
+
   window.POP_UI = {
     showMenuScreen() {
       showScreen("menu");
@@ -49,6 +85,12 @@
     },
     onGameReady() {},
     onGamePaused() {},
-    onGameResumed() {}
+    onGameResumed() {},
+    attachOptionsListeners
   };
+
+  // Initialisation dès le chargement
+  document.addEventListener("DOMContentLoaded", () => {
+    attachOptionsListeners();
+  });
 })();
