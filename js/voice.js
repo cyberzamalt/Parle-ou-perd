@@ -1,7 +1,7 @@
 // ============================================================
 // Parle ou perd ! - js/voice.js
 // ------------------------------------------------------------
-// Rôle : gestion du micro et de la reconnaissance vocale (optimisé, live, avec logs).
+// Rôle : gestion du micro et de la reconnaissance vocale (optimisé, live, anti-doublon par transcript).
 // Utilise l'API Web Speech (SpeechRecognition) dans le navigateur.
 // ============================================================
 (function () {
@@ -18,6 +18,7 @@
   let lastTranscript = "";
   let lastExecutedCommand = "";
   let lastCommandTime = 0;
+  let lastHandledTranscript = "";
   let sensitivity = CONFIG.voice?.defaultSensitivity || "medium";
 
   const VALID_COMMANDS = ["saute", "baisse", "gauche", "droite"];
@@ -73,17 +74,19 @@
 
         if (isValid) {
           const delaySinceLast = now - lastCommandTime;
-          if (matched !== lastExecutedCommand || delaySinceLast > MIN_COMMAND_DELAY_MS) {
+
+          if (transcript !== lastHandledTranscript && (matched !== lastExecutedCommand || delaySinceLast > MIN_COMMAND_DELAY_MS)) {
+            lastHandledTranscript = transcript;
             lastExecutedCommand = matched;
             lastCommandTime = now;
 
-            console.log(`[voice] Exécution immédiate: ${matched} (final: ${result.isFinal}) après ${delaySinceLast}ms`);
+            console.log(`[voice] Exécution: ${matched} (final: ${result.isFinal}) après ${delaySinceLast}ms`);
 
             if (matched === "saute" && window.POP_Engine?.jump) {
               POP_Engine.jump();
             }
           } else {
-            console.log(`[voice] Commande ignorée (déjà exécutée récemment): ${matched} (${delaySinceLast}ms)`);
+            console.log(`[voice] Ignoré (doublon ou trop proche): ${matched} (${delaySinceLast}ms)`);
           }
         }
       }
