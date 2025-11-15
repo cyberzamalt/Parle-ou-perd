@@ -35,7 +35,7 @@
   Object.assign(obstacle.style, {
     position: "absolute",
     bottom: "10px",
-    right: "10px",
+    right: "0px",
     width: "40px",
     height: "40px",
     background: "#f44",
@@ -48,9 +48,17 @@
   area.appendChild(player);
   area.appendChild(obstacle);
 
-  // Boucle simple pour tests (bientôt supprimée au profit du moteur réel)
+  // Position actuelle de l'obstacle (en pixels)
+  let obstacleX = area.clientWidth - 50; // Position de départ approximative
+
+  // Boucle d'animation
   function gameLoop() {
-    // Animation future ici
+    obstacleX -= 2; // vitesse (pixels par frame)
+    if (obstacleX < -40) {
+      obstacleX = area.clientWidth + Math.random() * 100; // boucle + variation
+    }
+    obstacle.style.left = obstacleX + "px";
+
     requestAnimationFrame(gameLoop);
   }
 
