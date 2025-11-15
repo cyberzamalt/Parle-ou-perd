@@ -12,6 +12,7 @@
 
   const CONFIG = window.POP_CONFIG || {};
 
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
   let isSupported = false;
   let isListening = false;
@@ -22,7 +23,8 @@
   const VALID_COMMANDS = ["saute", "baisse", "gauche", "droite"];
 
   function initVoice() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    console.log("[voice] initVoice lancé");
+
     if (!SpeechRecognition) {
       console.warn("[voice] API Web Speech non supportée");
       updateMicStatus({ supported: false });
@@ -49,7 +51,7 @@
     recognition.onend = () => {
       isListening = false;
       updateMicStatus({ supported: true, isListening });
-      // Redémarre automatiquement sans dépendre d'un écran
+      // Redémarre automatiquement
       startListening();
     };
 
@@ -75,9 +77,11 @@
   }
 
   function startListening() {
+    console.log("[voice] startListening called");
     if (!recognition || isListening) return;
     try {
       recognition.start();
+      console.log("[voice] recognition.start() tenté");
     } catch (e) {
       console.warn("[voice] start() failed:", e);
     }
@@ -109,4 +113,9 @@
     stopListening,
     setSensitivity
   };
+
+  // Initialiser automatiquement au chargement de la page
+  document.addEventListener("DOMContentLoaded", () => {
+    initVoice();
+  });
 })();
