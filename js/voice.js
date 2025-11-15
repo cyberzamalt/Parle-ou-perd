@@ -1,4 +1,9 @@
-// ======== PATCH : voice.js amélioré ========
+// ============================================================
+// Parle ou perd ! - js/voice.js
+// ------------------------------------------------------------
+// Rôle : gestion du micro et de la reconnaissance vocale.
+// Utilise l'API Web Speech (SpeechRecognition) dans le navigateur.
+// ============================================================
 (function () {
   "use strict";
 
@@ -26,7 +31,7 @@
 
     recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = true; // Activation pour une meilleure réactivité
+    recognition.interimResults = true; // Pour réduire la latence
     recognition.lang = "fr-FR";
 
     recognition.onstart = () => {
@@ -61,8 +66,15 @@
       if (window.POP_UI?.updateLastCommand) {
         window.POP_UI.updateLastCommand({ text: transcript, recognized: isValid });
       }
-      if (isValid && window.POP_Game?.simulateCommand) {
-        window.POP_Game.simulateCommand(matched);
+
+      if (isValid) {
+        console.log("[voice] Commande reconnue:", matched);
+
+        if (matched === "saute" && window.POP_Engine?.jump) {
+          window.POP_Engine.jump();
+        }
+
+        // Ajout possible pour autres commandes à l'avenir
       }
     };
 
@@ -106,15 +118,8 @@
     stopListening,
     setSensitivity
   };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initVoice();
+  });
 })();
-
-
-// ======== PATCH : game.js - lien vers moteur (POP_Engine) ========
-window.POP_Game = {
-  simulateCommand(cmd) {
-    console.log("[game] Commande reçue :", cmd);
-    if (cmd === "saute") {
-      POP_Engine.jump();
-    }
-  }
-};
