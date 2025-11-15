@@ -1,9 +1,4 @@
-// ============================================================
-// Parle ou perd ! - js/voice.js
-// ------------------------------------------------------------
-// Rôle : gestion du micro et de la reconnaissance vocale.
-// Utilise l'API Web Speech (SpeechRecognition) dans le navigateur.
-// ============================================================
+// ======== PATCH : voice.js amélioré ========
 (function () {
   "use strict";
 
@@ -11,8 +6,6 @@
   STATE.voice = STATE.voice || {};
 
   const CONFIG = window.POP_CONFIG || {};
-
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
   let isSupported = false;
   let isListening = false;
@@ -24,7 +17,7 @@
 
   function initVoice() {
     console.log("[voice] initVoice lancé");
-
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn("[voice] API Web Speech non supportée");
       updateMicStatus({ supported: false });
@@ -33,10 +26,11 @@
 
     recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = false;
+    recognition.interimResults = true; // Activation pour une meilleure réactivité
     recognition.lang = "fr-FR";
 
     recognition.onstart = () => {
+      console.log("[voice] démarré");
       isListening = true;
       updateMicStatus({ supported: true, isListening });
     };
@@ -49,9 +43,10 @@
     };
 
     recognition.onend = () => {
+      console.log("[voice] arrêt (reprise automatique)");
       isListening = false;
       updateMicStatus({ supported: true, isListening });
-      startListening(); // appel direct sans condition
+      startListening();
     };
 
     recognition.onresult = (event) => {
@@ -80,7 +75,6 @@
     if (!recognition || isListening) return;
     try {
       recognition.start();
-      console.log("[voice] recognition.start() tenté");
     } catch (e) {
       console.warn("[voice] start() failed:", e);
     }
@@ -112,8 +106,15 @@
     stopListening,
     setSensitivity
   };
-
-  document.addEventListener("DOMContentLoaded", () => {
-    initVoice();
-  });
 })();
+
+
+// ======== PATCH : game.js - lien vers moteur (POP_Engine) ========
+window.POP_Game = {
+  simulateCommand(cmd) {
+    console.log("[game] Commande reçue :", cmd);
+    if (cmd === "saute") {
+      POP_Engine.jump();
+    }
+  }
+};
