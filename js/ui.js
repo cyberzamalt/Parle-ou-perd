@@ -2,7 +2,7 @@
 // Parle ou perd ! - js/ui.js
 // ------------------------------------------------------------
 // Rôle : gestion de l'interface utilisateur (navigation, HUD)
-// Appelle startListening() dès l'affichage du jeu
+// Attente du micro prêt avant d'afficher le jeu
 // ============================================================
 (function () {
   "use strict";
@@ -53,6 +53,18 @@
     }
   }
 
+  async function waitForMicroReady(timeout = 5000) {
+    const start = Date.now();
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (window.POP_STATE?.voice?.ready || Date.now() - start > timeout) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 50);
+    });
+  }
+
   window.POP_UI = {
     showMenuScreen() {
       showScreen("menu");
@@ -63,11 +75,12 @@
     showHelpScreen() {
       showScreen("help");
     },
-    showGameScreen() {
-      showScreen("game");
+    async showGameScreen() {
       if (window.POP_Voice?.startListening) {
         window.POP_Voice.startListening();
       }
+      await waitForMicroReady();
+      showScreen("game");
     },
     showGameOverScreen({ score, bestScore, bestStreak, precisionPercent }) {
       showScreen("gameover");
