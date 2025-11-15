@@ -1,111 +1,110 @@
-/* ============================================================
-   Parle ou perd ! - css/style.css
-   ------------------------------------------------------------
-   Styles de base pour l’interface et la zone de jeu
-   ============================================================ */
+/* Parle ou perd ! - css/style.css */
 
 body {
+  font-family: Arial, sans-serif;
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: #111;
-  color: white;
+  padding: 0;
+  background-color: #111;
+  color: #fff;
   text-align: center;
 }
 
-h1, h2 {
-  margin-top: 1em;
-  font-weight: normal;
+h1 {
+  font-size: 2.5em;
+  margin-top: 20px;
 }
 
 button {
   padding: 10px 20px;
   margin: 10px;
   font-size: 1em;
-  border-radius: 4px;
-  border: none;
-  background-color: #555;
-  color: white;
   cursor: pointer;
 }
 
-.screen {
-  display: flex;
+button:hover {
+  opacity: 0.9;
+}
+
+.menu, .options, .help, .game {
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  height: 100vh;
+  padding: 20px;
 }
 
-.screen[hidden] {
-  display: none !important;
-}
-
-#game-area {
-  position: relative;
-  width: 90vw;
-  max-width: 480px;
-  aspect-ratio: 9/16;
-  background-color: #222;
-  margin: 20px auto;
-  overflow: hidden;
-  border-radius: 10px;
-}
-
-.player {
-  position: absolute;
-  bottom: 10px;
-  left: 40px;
-  width: 40px;
-  height: 40px;
-  background-color: #4cf;
-  border-radius: 8px;
-  z-index: 10;
-  transition: bottom 0.2s;
-}
-
-.obstacle {
-  position: absolute;
-  bottom: 10px;
-  right: 0px;
-  width: 40px;
-  height: 40px;
-  background-color: #f44;
-  border-radius: 8px;
-  z-index: 9;
-}
-
-.hud {
+.menu.active,
+.options.active,
+.help.active,
+.game.active {
   display: flex;
-  justify-content: space-between;
-  width: 90vw;
-  max-width: 480px;
+}
+
+#gameArea {
+  background-color: #222;
+  width: 240px;
+  height: 426px;
+  margin: 0 auto;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+#player, #obstacle {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  bottom: 10px;
+}
+
+#player {
+  background-color: #ccc;
+  left: 10px;
+}
+
+#obstacle {
+  background-color: #000;
+  right: 10px;
+}
+
+.scoreboard {
+  display: flex;
+  justify-content: space-around;
+  font-size: 0.9em;
   margin: 10px auto;
-  font-size: 0.9em;
+  width: 240px;
 }
 
-.hud-label {
+#lastCommandDisplay {
+  margin-top: 8px;
   font-size: 0.8em;
-  opacity: 0.8;
+  color: #ccc;
 }
 
-.hud-value {
-  font-weight: bold;
-  font-size: 1.1em;
+input[type="range"] {
+  width: 200px;
 }
 
-.hud-mic {
-  color: red;
-  margin-left: 10px;
+select {
+  padding: 5px;
+  margin: 5px;
 }
 
-.hud-bottom {
-  font-size: 0.9em;
-  margin-top: 10px;
+label {
+  margin: 5px;
 }
 
-.game-placeholder {
-  color: #888;
-  font-size: 0.9em;
-  text-align: center;
-  margin-top: 1em;
+.options label, .options input, .options select {
+  margin-bottom: 10px;
+}
+
+.options .button-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.options .button-group button {
+  margin: 5px 0;
 }
