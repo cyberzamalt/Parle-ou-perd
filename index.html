@@ -1,82 +1,112 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Parle ou perd !</title>
-  <link rel="stylesheet" href="css/style.css"/>
-</head>
-<body>
-  <!-- Menu principal -->
-  <section id="screen-menu">
-    <h1>Parle ou perd !</h1>
-    <p>Donne les bons ordres à voix haute</p>
-    <button onclick="POP_UI.showGameScreen()">JOUER</button>
-    <button onclick="POP_UI.showOptionsScreen()">OPTIONS</button>
-    <button onclick="POP_UI.showHelpScreen()">AIDE</button>
-    <p>Record : <span id="hud-best">0</span> commande(s)</p>
-  </section>
+// ============================================================
+// Parle ou perd ! - js/voice.js
+// ------------------------------------------------------------
+// Rôle : gestion du micro et de la reconnaissance vocale.
+// Utilise l'API Web Speech (SpeechRecognition) dans le navigateur.
+// ============================================================
+(function () {
+  "use strict";
 
-  <!-- Options -->
-  <section id="screen-options" hidden>
-    <h2>Options</h2>
-    <label>
-      Volume :
-      <input type="range" id="option-volume" min="0" max="1" step="0.01">
-    </label>
-    <br>
-    <label>
-      Sensibilité micro :
-      <select id="option-mic-sensitivity">
-        <option value="low">Faible</option>
-        <option value="medium" selected>Moyenne</option>
-        <option value="high">Haute</option>
-      </select>
-    </label>
-    <br>
-    <label>
-      <input type="checkbox" id="option-vibration" checked>
-      Vibration
-    </label>
-    <br>
-    <button id="option-reset-record">RAZ RECORD</button>
-    <button onclick="POP_UI.showMenuScreen()">RETOUR</button>
-  </section>
+  const STATE = (window.POP_STATE = window.POP_STATE || {});
+  STATE.voice = STATE.voice || {};
 
-  <!-- Aide -->
-  <section id="screen-help" hidden>
-    <h2>Aide</h2>
-    <p>Dis SAUTE / BAISSE / GAUCHE / DROITE pour éviter les obstacles.</p>
-    <button onclick="POP_UI.showMenuScreen()">RETOUR</button>
-  </section>
+  const CONFIG = window.POP_CONFIG || {};
 
-  <!-- Jeu -->
-  <section id="screen-game" hidden>
-    <div class="scoreboard">
-      <span>Score <span id="hud-score">0</span></span>
-      <span>Record <span id="hud-best">0</span></span>
-      <span>Série <span id="hud-streak">0</span></span>
-      <span id="hud-last-spoken">Dernière commande : –</span>
-    </div>
-    <div id="game-zone">
-      <!-- zone de jeu dynamique : éléments injectés par engine.js -->
-    </div>
-  </section>
+  let recognition = null;
+  let isSupported = false;
+  let isListening = false;
+  let errorCode = null;
+  let lastTranscript = "";
+  let sensitivity = CONFIG.voice?.defaultSensitivity || "medium";
 
-  <!-- Fin de partie -->
-  <section id="screen-gameover" hidden>
-    <h2>Fin de partie</h2>
-    <p id="gameover-score">Score : 0</p>
-    <p id="gameover-precision">Précision : 0%</p>
-    <button onclick="POP_UI.showMenuScreen()">MENU</button>
-  </section>
+  const VALID_COMMANDS = ["saute", "baisse", "gauche", "droite"];
 
-  <!-- Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/ads.js"></script>
-  <script src="js/voice.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/engine.js"></script>
-</body>
-</html>
+  function initVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn("[voice] API Web Speech non supportée");
+      updateMicStatus({ supported: false });
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "fr-FR";
+
+    recognition.onstart = () => {
+      isListening = true;
+      updateMicStatus({ supported: true, isListening });
+    };
+
+    recognition.onerror = (event) => {
+      console.warn("[voice] erreur:", event.error);
+      errorCode = event.error;
+      isListening = false;
+      updateMicStatus({ supported: true, isListening, errorCode });
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      updateMicStatus({ supported: true, isListening });
+      // Redémarre automatiquement sans dépendre d'un écran
+      startListening();
+    };
+
+    recognition.onresult = (event) => {
+      const result = event.results[event.results.length - 1];
+      if (!result || !result[0]) return;
+      const transcript = result[0].transcript.trim().toLowerCase();
+      lastTranscript = transcript;
+
+      const matched = VALID_COMMANDS.find((cmd) => transcript.includes(cmd));
+      const isValid = !!matched;
+
+      if (window.POP_UI?.updateLastCommand) {
+        window.POP_UI.updateLastCommand({ text: transcript, recognized: isValid });
+      }
+      if (isValid && window.POP_Game?.simulateCommand) {
+        window.POP_Game.simulateCommand(matched);
+      }
+    };
+
+    isSupported = true;
+    updateMicStatus({ supported: true, isListening });
+  }
+
+  function startListening() {
+    if (!recognition || isListening) return;
+    try {
+      recognition.start();
+    } catch (e) {
+      console.warn("[voice] start() failed:", e);
+    }
+  }
+
+  function stopListening() {
+    if (!recognition || !isListening) return;
+    try {
+      recognition.stop();
+    } catch (e) {
+      console.warn("[voice] stop() failed:", e);
+    }
+  }
+
+  function setSensitivity(level) {
+    sensitivity = level;
+  }
+
+  function updateMicStatus(status) {
+    STATE.voice.status = status;
+    if (window.POP_UI?.updateMicStatus) {
+      window.POP_UI.updateMicStatus(status);
+    }
+  }
+
+  window.POP_Voice = {
+    initVoice,
+    startListening,
+    stopListening,
+    setSensitivity
+  };
+})();
