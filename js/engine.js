@@ -7,7 +7,7 @@
 (function () {
   "use strict";
 
-  const area = document.getElementById("game-area"); // ✅ ID corrigé ici
+  const area = document.getElementById("game-zone"); // ✅ ID corrigé ici
   if (!area) {
     console.warn("[engine] Zone de jeu introuvable");
     return;
