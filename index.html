@@ -3,122 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parle ou perd !</title>
+  <title>Parle ou perd</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-
-  <!-- Écran MENU principal -->
   <section id="screen-menu" class="screen">
     <h1>Parle ou perd !</h1>
-    <p>Donne les bons ordres à voix haute</p>
-    <button id="btn-menu-play">JOUER</button>
-    <button id="btn-menu-options">OPTIONS</button>
-    <button id="btn-menu-help">AIDE</button>
-    <p>Record : <span id="menu-best-score">0</span> commande(s)</p>
+    <button onclick="POP_Game.startNewGame()">JOUER</button>
+    <button onclick="POP_UI.showOptionsScreen()">OPTIONS</button>
+    <button onclick="POP_UI.showHelpScreen()">AIDE</button>
   </section>
 
-  <!-- Écran AIDE -->
-  <section id="screen-help" class="screen" hidden>
-    <h2>Aide</h2>
-    <p>Dis SAUTE / BAISSE / GAUCHE / DROITE pour éviter les obstacles.</p>
-    <button id="btn-help-back">RETOUR</button>
-  </section>
-
-  <!-- Écran OPTIONS -->
   <section id="screen-options" class="screen" hidden>
     <h2>Options</h2>
-    <label>Volume : <input id="opt-volume" type="range" min="0" max="100" value="80" /></label>
-    <label>Sensibilité micro :
-      <select id="opt-mic-sens">
-        <option value="low">Basse</option>
-        <option value="medium" selected>Moyenne</option>
-        <option value="high">Haute</option>
-      </select>
-    </label>
-    <label><input id="opt-vibration" type="checkbox" checked /> Vibration</label>
-    <button id="btn-reset-record">RAZ RECORD</button>
-    <button id="btn-options-back">RETOUR</button>
+    <button onclick="POP_UI.showMenuScreen()">MENU</button>
   </section>
 
-  <!-- Écran de JEU -->
+  <section id="screen-help" class="screen" hidden>
+    <h2>Comment jouer ?</h2>
+    <p>Parle à haute voix pour éviter les obstacles !</p>
+    <button onclick="POP_UI.showMenuScreen()">MENU</button>
+  </section>
+
   <section id="screen-game" class="screen" hidden>
-  <div id="hud-top" class="hud">
-    <div class="hud-left">
-      <div class="hud-label">Score</div>
-      <div class="hud-value" id="hud-score">0</div>
+    <div id="hud-top" class="hud">
+      <div class="hud-left">
+        <div class="hud-label">Score</div>
+        <div class="hud-value" id="hud-score">0</div>
+      </div>
+      <div class="hud-center">
+        <div class="hud-label">Record</div>
+        <div class="hud-value" id="hud-best">0</div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-label">Série</div>
+        <div class="hud-value" id="hud-streak">0</div>
+      </div>
+      <div class="hud-mic" id="hud-mic-status">●</div>
     </div>
-    <div class="hud-center">
-      <div class="hud-label">Record</div>
-      <div class="hud-value" id="hud-best">0</div>
+
+    <div id="game-area" class="game-placeholder">(zone de jeu)</div>
+
+    <div class="hud-bottom">
+      <div class="hud-label">Dernière commande :</div>
+      <div class="hud-value" id="hud-last-spoken">–</div>
     </div>
-    <div class="hud-right">
-      <div class="hud-label">Série</div>
-      <div class="hud-value" id="hud-streak">0</div>
-    </div>
-    <div class="hud-mic" id="hud-mic-status">●</div>
-  </div>
-
-  <div id="game-area" class="game-placeholder">(zone de jeu)</div>
-
-  <div class="hud-bottom">
-    <div class="hud-label">Dernière commande :</div>
-    <div class="hud-value" id="hud-last-spoken">–</div>
-  </div>
-</section>
-
-
-  <!-- Écran PAUSE -->
-  <section id="screen-pause" class="screen" hidden>
-    <h2>Pause</h2>
-    <button id="btn-pause-resume">REPRENDRE</button>
-    <button id="btn-pause-restart">REJOUER</button>
-    <button id="btn-pause-menu">MENU</button>
   </section>
 
-  <!-- Écran GAME OVER -->
   <section id="screen-gameover" class="screen" hidden>
     <h2>Fin de partie</h2>
-    <div id="gameover-feedback"></div>
-    <div>Score : <span id="gameover-score">0</span></div>
-    <div>Record : <span id="gameover-best">0</span></div>
-    <div>Meilleure série : <span id="gameover-best-streak">0</span></div>
-    <div>Précision : <span id="gameover-accuracy">0 %</span></div>
-    <div id="gameover-rewarded" hidden>
-      <button id="btn-gameover-continue">CONTINUER (PUB)</button>
-    </div>
-    <button id="btn-gameover-restart">REJOUER</button>
-    <button id="btn-gameover-menu">MENU</button>
+    <p id="gameover-score">Score : 0</p>
+    <p id="gameover-precision">Précision : 0%</p>
+    <button onclick="POP_Game.startNewGame()">REJOUER</button>
+    <button onclick="POP_UI.showMenuScreen()">MENU</button>
   </section>
 
-  <!-- Bannière PUB -->
-  <div id="ad-banner-container" aria-hidden="true" style="display:none">
-    <div id="ad-banner">BANNIÈRE PUB (debug)</div>
-  </div>
-
-  <!-- JS core -->
   <script src="js/config.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/voice.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/ads.js"></script>
-  <script>
-    (function () {
-      function boot() {
-        try {
-          if (typeof initConfig === "function") initConfig();
-          if (POP_Game?.initGame) POP_Game.initGame();
-          if (POP_Voice?.initVoice) POP_Voice.initVoice();
-          if (POP_UI?.initUI) POP_UI.initUI();
-          if (POP_Ads?.initAds) POP_Ads.initAds();
-        } catch (err) {
-          console.error("Erreur init jeu :", err);
-        }
-      }
-      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-      else boot();
-    })();
-  </script>
+  <script src="js/game.js"></script>
+  <script src="js/voice.js"></script>
   <script src="js/engine.js"></script>
+
+  <script>
+    POP_Game.initGame();
+  </script>
 </body>
 </html>
