@@ -2,13 +2,13 @@
 // Parle ou perd ! - js/engine.js
 // ------------------------------------------------------------
 // Rôle : moteur visuel du jeu (personnage, obstacles, collisions)
-// Injecte dynamiquement le contenu dans #game-area
+// Injecte dynamiquement le contenu dans #game-zone
 // ============================================================
 (function () {
   "use strict";
 
-  const area = document.getElementById("game-area");
-  if (!area) {
+  const zone = document.getElementById("game-zone");
+  if (!zone) {
     console.warn("[engine] Zone de jeu introuvable");
     return;
   }
@@ -19,11 +19,15 @@
   player.className = "player";
   obstacle.className = "obstacle";
 
-  area.innerHTML = "";
-  area.appendChild(player);
-  area.appendChild(obstacle);
+  zone.innerHTML = "";
+  zone.appendChild(player);
+  zone.appendChild(obstacle);
 
-  let obstacleX = area.clientWidth - 50;
+  // Positionnement initial
+  player.style.left = "10px";
+  player.style.bottom = "10px";
+  obstacle.style.bottom = "10px";
+  let obstacleX = zone.clientWidth - 40;
 
   window.POP_Engine = {
     jump: function () {
@@ -48,8 +52,8 @@
       p.top < o.bottom;
 
     if (intersect) {
-      player.style.background = "#aaa";
-      obstacle.style.background = "#000";
+      player.style.background = "#f00";
+      obstacle.style.background = "#333";
       console.log("[engine] Collision détectée");
     }
   }
@@ -57,7 +61,8 @@
   function gameLoop() {
     obstacleX -= 2;
     if (obstacleX < -40) {
-      obstacleX = area.clientWidth + Math.random() * 100;
+      obstacleX = zone.clientWidth + Math.random() * 100;
+      obstacle.style.background = "#09f";
     }
     obstacle.style.left = obstacleX + "px";
     checkCollision();
