@@ -2,12 +2,12 @@
 // Parle ou perd ! - js/engine.js
 // ------------------------------------------------------------
 // Rôle : moteur visuel du jeu (personnage, obstacles, collisions)
-// Injecte dynamiquement le contenu dans #game-area
+// Injecte dynamiquement le contenu dans #game-zone
 // ============================================================
 (function () {
   "use strict";
 
-  const area = document.getElementById("game-zone"); // ✅ ID corrigé ici
+  const area = document.getElementById("game-zone");
   if (!area) {
     console.warn("[engine] Zone de jeu introuvable");
     return;
@@ -24,18 +24,15 @@
   area.appendChild(obstacle);
 
   let obstacleX = area.clientWidth - 50;
-  let isJumping = false;
 
   window.POP_Engine = {
     jump: function () {
-      if (isJumping) return;
-      isJumping = true;
+      if (player.classList.contains("jumping")) return;
       player.classList.add("jumping");
       player.style.bottom = "100px";
       setTimeout(() => {
         player.style.bottom = "10px";
         player.classList.remove("jumping");
-        isJumping = false;
       }, 400);
     }
   };
