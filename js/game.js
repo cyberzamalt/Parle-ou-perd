@@ -34,6 +34,10 @@
     if (window.POP_UI?.onGameReady) {
       window.POP_UI.onGameReady({ bestScore });
     }
+
+    if (window.POP_Voice?.initVoice) {
+      window.POP_Voice.initVoice();
+    }
   }
 
   function startNewGame() {
@@ -45,6 +49,10 @@
 
     if (window.POP_UI?.showGameScreen) window.POP_UI.showGameScreen();
     updateHUD();
+
+    if (window.POP_Voice?.startListening) {
+      window.POP_Voice.startListening();
+    }
   }
 
   function simulateCommand(cmd) {
