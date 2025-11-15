@@ -51,8 +51,7 @@
     recognition.onend = () => {
       isListening = false;
       updateMicStatus({ supported: true, isListening });
-      // Redémarre automatiquement
-      startListening();
+      startListening(); // appel direct sans condition
     };
 
     recognition.onresult = (event) => {
@@ -114,7 +113,6 @@
     setSensitivity
   };
 
-  // Initialiser automatiquement au chargement de la page
   document.addEventListener("DOMContentLoaded", () => {
     initVoice();
   });
