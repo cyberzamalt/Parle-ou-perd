@@ -1,8 +1,7 @@
 // ============================================================
 // Parle ou perd ! - js/config.js
 // ------------------------------------------------------------
-// Rôle : contient la configuration globale du jeu
-// Utilisé par : game.js, ads.js, ui.js, etc.
+// Rôle : configuration centrale du jeu (voix, pub, stockage)
 // ============================================================
 
 window.POP_CONFIG = {
