@@ -22,12 +22,12 @@
     <h2>Options</h2>
     <label>
       Volume :
-      <input type="range" id="option-volume" min="0" max="1" step="0.01">
+      <input type="range" id="options-volume" min="0" max="1" step="0.01">
     </label>
     <br>
     <label>
       Sensibilité micro :
-      <select id="option-mic-sensitivity">
+      <select id="options-sensitivity">
         <option value="low">Faible</option>
         <option value="medium" selected>Moyenne</option>
         <option value="high">Haute</option>
@@ -35,11 +35,11 @@
     </label>
     <br>
     <label>
-      <input type="checkbox" id="option-vibration" checked>
+      <input type="checkbox" id="options-vibration" checked>
       Vibration
     </label>
     <br>
-    <button id="option-reset-record">RAZ RECORD</button>
+    <button id="options-reset">RAZ RECORD</button>
     <button onclick="POP_UI.showMenuScreen()">RETOUR</button>
   </section>
 
@@ -59,7 +59,7 @@
       <span id="hud-last-spoken">Dernière commande : –</span>
     </div>
     <div id="game-container">
-      <div id="game-area">(zone de jeu)</div> <!-- ✅ ID corrigé ici -->
+      <div id="game-zone"></div>
     </div>
   </section>
 
@@ -73,9 +73,9 @@
 
   <!-- Scripts -->
   <script src="js/config.js"></script>
+  <script src="js/voice.js"></script> <!-- Doit être AVANT ui.js et game.js -->
   <script src="js/ui.js"></script>
   <script src="js/ads.js"></script>
-  <script src="js/voice.js"></script>
   <script src="js/game.js"></script>
   <script src="js/engine.js"></script>
 </body>
