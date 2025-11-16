@@ -58,9 +58,7 @@
       <span>Série <span id="hud-streak">0</span></span>
       <span id="hud-last-spoken">Dernière commande : –</span>
     </div>
-    <div id="game-container">
-      <div id="game-zone"></div>
-    </div>
+    <div id="game-area" class="game-area"></div>
   </section>
 
   <!-- Fin de partie -->
@@ -71,12 +69,12 @@
     <button onclick="POP_UI.showMenuScreen()">MENU</button>
   </section>
 
-  <!-- Scripts -->
+  <!-- Chargement des scripts dans le bon ordre -->
   <script src="js/config.js"></script>
-  <script src="js/voice.js"></script> <!-- Doit être AVANT ui.js et game.js -->
-  <script src="js/ui.js"></script>
-  <script src="js/ads.js"></script>
-  <script src="js/game.js"></script>
   <script src="js/engine.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/ads.js"></script>
 </body>
 </html>
