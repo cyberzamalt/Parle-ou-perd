@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Parle ou perd !</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <!-- Menu principal -->
@@ -23,8 +23,7 @@
     <label>
       Volume :
       <input type="range" id="options-volume" min="0" max="1" step="0.01">
-    </label>
-    <br>
+    </label><br>
     <label>
       Sensibilité micro :
       <select id="options-sensitivity">
@@ -32,13 +31,11 @@
         <option value="medium" selected>Moyenne</option>
         <option value="high">Haute</option>
       </select>
-    </label>
-    <br>
+    </label><br>
     <label>
       <input type="checkbox" id="options-vibration" checked>
       Vibration
-    </label>
-    <br>
+    </label><br>
     <button id="options-reset">RAZ RECORD</button>
     <button onclick="POP_UI.showMenuScreen()">RETOUR</button>
   </section>
@@ -58,7 +55,7 @@
       <span>Série <span id="hud-streak">0</span></span>
       <span id="hud-last-spoken">Dernière commande : –</span>
     </div>
-    <div id="game-area" class="game-area"></div>
+    <div id="game-area"></div>
   </section>
 
   <!-- Fin de partie -->
@@ -69,12 +66,11 @@
     <button onclick="POP_UI.showMenuScreen()">MENU</button>
   </section>
 
-  <!-- Chargement des scripts dans le bon ordre -->
+  <!-- Scripts (dans le bon ordre) -->
   <script src="js/config.js"></script>
-  <script src="js/engine.js"></script>
+  <script src="js/engine.js"></script> <!-- d'abord le moteur -->
   <script src="js/game.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/voice.js"></script>
-  <script src="js/ads.js"></script>
 </body>
 </html>
