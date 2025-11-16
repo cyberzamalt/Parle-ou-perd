@@ -25,48 +25,61 @@ button:hover {
   opacity: 0.9;
 }
 
+.menu, .options, .help, .game {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+}
+
+.menu.active,
+.options.active,
+.help.active,
+.game.active {
+  display: flex;
+}
+
 #game-area {
-  width: 300px;
-  height: 200px;
-  background-color: #333;
-  border: 2px solid #fff;
-  margin: 20px auto;
+  background-color: #222;
+  width: 240px;
+  height: 426px;
+  margin: 0 auto;
+  border-radius: 10px;
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
+  border: 2px solid #aaa;
+}
+
+.player, .obstacle {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  bottom: 10px;
 }
 
 .player {
-  width: 30px;
-  height: 30px;
   background-color: #ccc;
-  position: absolute;
-  bottom: 10px;
   left: 10px;
-  transition: bottom 0.2s ease;
 }
 
 .obstacle {
-  width: 30px;
-  height: 30px;
-  background-color: red;
-  position: absolute;
-  bottom: 10px;
-  left: 260px;
+  background-color: #000;
+  right: 10px;
 }
 
-#hud {
+.scoreboard {
   display: flex;
   justify-content: space-around;
-  margin: 10px auto;
-  width: 90%;
-  max-width: 400px;
   font-size: 0.9em;
+  margin: 10px auto;
+  width: 240px;
 }
 
-#hud-last-spoken {
-  margin-top: 5px;
-  font-size: 0.85em;
+#lastCommandDisplay {
+  margin-top: 8px;
+  font-size: 0.8em;
   color: #ccc;
 }
 
@@ -83,9 +96,7 @@ label {
   margin: 5px;
 }
 
-.options label,
-.options input,
-.options select {
+.options label, .options input, .options select {
   margin-bottom: 10px;
 }
 
