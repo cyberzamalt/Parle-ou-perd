@@ -2,7 +2,7 @@
 // Parle ou perd ! - js/ui.js
 // ------------------------------------------------------------
 // Rôle : gestion de l'interface utilisateur (navigation, HUD)
-// Appelle initVoice() au lancement + startListening() au démarrage jeu
+// Appelle startListening() et initEngine() dès l'affichage du jeu
 // ============================================================
 (function () {
   "use strict";
@@ -36,16 +36,12 @@
     if (sensitivitySelect) {
       sensitivitySelect.addEventListener("change", (e) => {
         const value = e.target.value;
-        if (window.POP_Voice?.setSensitivity) {
-          window.POP_Voice.setSensitivity(value);
-        }
       });
     }
 
     if (vibrationCheckbox) {
       vibrationCheckbox.addEventListener("change", (e) => {
         const enabled = e.target.checked;
-        POP_CONFIG.vibration = enabled;
       });
     }
 
@@ -69,9 +65,11 @@
     },
     showGameScreen() {
       showScreen("game");
+      if (window.POP_Engine?.init) {
+        POP_Engine.init(); // Lance le moteur de jeu
+      }
       if (window.POP_Voice?.startListening) {
-        console.log("[ui] startListening called from showGameScreen");
-        window.POP_Voice.startListening();
+        window.POP_Voice.startListening(); // Lance la reconnaissance vocale
       }
     },
     showGameOverScreen({ score, bestScore, bestStreak, precisionPercent }) {
@@ -97,9 +95,5 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     attachOptionsListeners();
-    if (window.POP_Voice?.initVoice) {
-      console.log("[ui] initVoice auto-called at DOMContentLoaded");
-      window.POP_Voice.initVoice();
-    }
   });
 })();
