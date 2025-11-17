@@ -111,9 +111,11 @@
   }
 
   window.POP_Voice = {
-    initVoice,
-    startListening,
-    stopListening,
-    setSensitivity
-  };
+  initVoice,
+  startListening,
+  stopListening,
+  setSensitivity
+};
+
+initVoice(); // ← ce doit être appelé ici pour démarrer la reconnaissance
 })();
