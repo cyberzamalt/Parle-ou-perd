@@ -109,3 +109,12 @@ label {
 .options .button-group button {
   margin: 5px 0;
 }
+/* Ajoute une transition fluide au carré joueur */
+#player {
+  transition: bottom 0.2s ease;
+}
+
+/* Effet visuel temporaire pour le saut */
+#player.jumping {
+  bottom: 100px; /* Hauteur du saut */
+}
